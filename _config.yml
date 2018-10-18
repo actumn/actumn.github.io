@@ -16,10 +16,10 @@ minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt"
 
 # Site Settings
 locale                   : "ko-KR"
-title                    : "가을기"
+title                    : "Actumn"
 title_separator          : "-"
-name                     : "SunMyeong Lee"
-description              : "자꾸 까먹어서 적는 노트"
+name                     : "이선명"
+description              : ""
 url                      : "https://actumn.github.io"# the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : # the subpath of your site, e.g. "/blog"
 repository               : # GitHub username/repo-name e.g. "mmistakes/minimal-mistakes"
@@ -103,9 +103,9 @@ analytics:
 author:
   name             : "SunMyeong Lee"
   avatar           : # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
-  bio              : "I am an amazing person."
+  bio              : ""
   location         : "Somewhere"
-  email            :
+  email            : "actumn814@gmail.com"
   links:
     - label: "Email"
       icon: "fas fa-fw fa-envelope-square"
@@ -137,7 +137,7 @@ footer:
       # url:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
-      url: "https://actumn.github.com/"
+      url: "https://github.com/actumn"
     - label: "GitLab"
       icon: "fab fa-fw fa-gitlab"
       # url:
