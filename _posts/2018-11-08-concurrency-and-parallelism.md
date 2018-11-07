@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "동시성과 병렬성"
 date:   2018-11-08
 categories: cs
