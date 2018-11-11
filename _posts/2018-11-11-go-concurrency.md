@@ -175,5 +175,54 @@ From Smelter: Ore is smelted
 
 아, 메인함수도 go routine이라는 듯
 
+### range over a channel
+채널에 얼마나 send될 지 모를 경우
+``` 
+ // Ore Breaker
+ go func() {
+  for foundOre := range oreChan {
+   fmt.Println(“Miner: Received “ + foundOre + “ from finder”)
+  }
+ }()
+```
+
+### non-blocking read on a channel
+channel의 non-blocking read를 위한 테크닉.  
+select case를 쓴다.  
+```
+myChan := make(chan string)
+ 
+go func(){
+ myChan <- “Message!”
+}()
+ 
+select {
+ case msg := <- myChan:
+  fmt.Println(msg)
+ default:
+  fmt.Println(“No Msg”)
+}
+<-time.After(time.Second * 1)
+select {
+ case msg := <- myChan:
+  fmt.Println(msg)
+ default:
+  fmt.Println(“No Msg”)
+}
+
+output:
+No Msg
+Message!
+```
+non-blocking send도 있다.
+```
+select {
+ case myChan <- “message”:
+  fmt.Println(“sent the message”)
+ default:
+  fmt.Println(“no message sent”)
+}
+```
+
 ### Parallelism은?
 Parallelism을 위해선 [GOMAXPROCS를 건드려야 한다.](https://www.ardanlabs.com/blog/2014/01/concurrency-goroutines-and-gomaxprocs.html)
