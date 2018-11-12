@@ -6,6 +6,7 @@ categories: cs
 ---
 - [Learning Go's Concurrency](https://medium.com/@trevor4e/learning-gos-concurrency-through-illustrations-8c4aff603b3)
 ```
+  
 func main() {
  theMine := [5]string{“rock”, “ore”, “ore”, “rock”, “ore”}
  foundOre := finder(theMine)
