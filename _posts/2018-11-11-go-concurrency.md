@@ -4,9 +4,9 @@ title:  "Go의 Concurrency"
 date:   2018-11-11
 categories: cs
 ---
-- [Learning Go's Concurrency](https://medium.com/@trevor4e/learning-gos-concurrency-through-illustrations-8c4aff603b3)
-```
+- [Learning Go's Concurrency](https://medium.com/@trevor4e/learning-gos-concurrency-through-illustrations-8c4aff603b3)  
   
+```
 func main() {
  theMine := [5]string{“rock”, “ore”, “ore”, “rock”, “ore”}
  foundOre := finder(theMine)
@@ -22,6 +22,7 @@ From Smelter: [smeltedOre smeltedOre smeltedOre]
 멀티스레드로 동작시키기 위해선?
 
 ## Go routines
+  
 ```
 func main() {
  theMine := [5]string{“rock”, “ore”, “ore”, “rock”, “ore”}
@@ -48,7 +49,7 @@ myFirstChannel <- "hello" // Send
 myVariable := <- myFirstChannel // Receive
 ```
 화살표(<-)를 통해 send, receive를 수행.  
-위의 예제코드는 다시 아래와 같이 변경
+위의 예제코드는 다시 아래와 같이 변경  
 ```
 func main() {
  theMine := [5]string{“ore1”, “ore2”, “ore3”}
@@ -74,8 +75,8 @@ Miner: Received ore2 from finder
 Miner: Received ore3 from finder
 ```
 
-## Channel Blocking
-채널은 go routine을 블로킹한다.
+## Channel Blocking  
+채널은 go routine을 블로킹한다.  
 ```
 myFirstChannel <- "hello" // Send
 ```
