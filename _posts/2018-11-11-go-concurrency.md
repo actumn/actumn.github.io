@@ -227,4 +227,5 @@ select {
 ```
 
 ### Parallelism은?
-Parallelism을 위해선 [GOMAXPROCS를 건드려야 한다.](https://www.ardanlabs.com/blog/2014/01/concurrency-goroutines-and-gomaxprocs.html)
+Parallelism을 위해선 [GOMAXPROCS를 건드려야 한다.](https://www.ardanlabs.com/blog/2014/01/concurrency-goroutines-and-gomaxprocs.html)  
+(GOMAXPROCS default value: GO 1.5 이상에서 CPU 코어수, 이전 버전에선 1)  
