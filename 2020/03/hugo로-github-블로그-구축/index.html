@@ -1,0 +1,287 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=generator content="Hugo 0.62.2 with theme Tranquilpeak 0.4.7-BETA"><meta name=author content="SunMyeong Lee"><meta name=keywords content><meta name=description content="jekyll을 버리고 다시 만들기.
+있으나 마나 관리도 안하던 블로그 버리고 새로 시작하고자 다시 만듭니다.
+기왕 만드는거 멋있게 hugo도 한번 써보고. Github Actions도 써보고."><meta property="og:description" content="jekyll을 버리고 다시 만들기.
+있으나 마나 관리도 안하던 블로그 버리고 새로 시작하고자 다시 만듭니다.
+기왕 만드는거 멋있게 hugo도 한번 써보고. Github Actions도 써보고."><meta property="og:type" content="article"><meta property="og:title" content="hugo로 Github 블로그 구축"><meta name=twitter:title content="hugo로 Github 블로그 구축"><meta property="og:url" content="https://actumn.github.io/2020/03/hugo%EB%A1%9C-github-%EB%B8%94%EB%A1%9C%EA%B7%B8-%EA%B5%AC%EC%B6%95/"><meta property="twitter:url" content="https://actumn.github.io/2020/03/hugo%EB%A1%9C-github-%EB%B8%94%EB%A1%9C%EA%B7%B8-%EA%B5%AC%EC%B6%95/"><meta property="og:site_name" content="Actumn (SunMyeong Lee)"><meta property="og:description" content="jekyll을 버리고 다시 만들기.
+있으나 마나 관리도 안하던 블로그 버리고 새로 시작하고자 다시 만듭니다.
+기왕 만드는거 멋있게 hugo도 한번 써보고. Github Actions도 써보고."><meta name=twitter:description content="jekyll을 버리고 다시 만들기.
+있으나 마나 관리도 안하던 블로그 버리고 새로 시작하고자 다시 만듭니다.
+기왕 만드는거 멋있게 hugo도 한번 써보고. Github Actions도 써보고."><meta property="og:locale" content="ko-kr"><meta property="article:published_time" content="2020-03-21T16:02:28"><meta property="article:modified_time" content="2020-03-21T16:02:28"><meta property="article:section" content="github blog"><meta property="article:tag" content="hugo"><meta name=twitter:card content="summary"><meta property="og:image" content="https://www.gravatar.com/avatar/8c162af52bd6a1258c11ddf087e2af65?s=640"><meta property="twitter:image" content="https://www.gravatar.com/avatar/8c162af52bd6a1258c11ddf087e2af65?s=640"><title>hugo로 Github 블로그 구축</title><link rel=icon href=https://actumn.github.io/favicon.png><link rel=canonical href=https://actumn.github.io/2020/03/hugo%EB%A1%9C-github-%EB%B8%94%EB%A1%9C%EA%B7%B8-%EA%B5%AC%EC%B6%95/><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin=anonymous><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.4/jquery.fancybox.min.css integrity="sha256-vuXZ9LGmmwtjqFX1F+EKin1ThZMub58gKULUyf0qECk=" crossorigin=anonymous><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.4/helpers/jquery.fancybox-thumbs.min.css integrity="sha256-SEa4XYAHihTcEP1f5gARTB2K26Uk8PsndQYHQC1f4jU=" crossorigin=anonymous><link rel=stylesheet href=https://actumn.github.io/css/style-twzjdbqhmnnacqs0pwwdzcdbt8yhv8giawvjqjmyfoqnvazl0dalmnhdkvp7.min.css></head><body><div id=blog><header id=header data-behavior=1><i id=btn-open-sidebar class="fa fa-lg fa-bars"></i><div class=header-title><a class=header-title-link href=https://actumn.github.io/>Actumn (SunMyeong Lee)</a></div><a class=header-right-picture href=https://actumn.github.io/#about><img class=header-picture src="https://www.gravatar.com/avatar/8c162af52bd6a1258c11ddf087e2af65?s=90" alt></a></header><nav id=sidebar data-behavior=1><div class=sidebar-container><div class=sidebar-profile><a href=https://actumn.github.io/#about><img class=sidebar-profile-picture src="https://www.gravatar.com/avatar/8c162af52bd6a1258c11ddf087e2af65?s=110" alt></a><h4 class=sidebar-profile-name>SunMyeong Lee</h4><h5 class=sidebar-profile-bio>I love <em>language learning</em>, <em>development</em>, <em>open source</em></h5></div><ul class=sidebar-buttons><li class=sidebar-button><a class=sidebar-button-link href=https://actumn.github.io/><i class="sidebar-button-icon fa fa-lg fa-home"></i><span class=sidebar-button-desc>Home</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://actumn.github.io/categories><i class="sidebar-button-icon fa fa-lg fa-bookmark"></i><span class=sidebar-button-desc>Categories</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://actumn.github.io/tags><i class="sidebar-button-icon fa fa-lg fa-tags"></i><span class=sidebar-button-desc>Tags</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://actumn.github.io/archives><i class="sidebar-button-icon fa fa-lg fa-archive"></i><span class=sidebar-button-desc>Archives</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://actumn.github.io/#about><i class="sidebar-button-icon fa fa-lg fa-question"></i><span class=sidebar-button-desc>About</span></a></li></ul><ul class=sidebar-buttons><li class=sidebar-button><a class=sidebar-button-link href=https://github.com/actumn target=_blank rel=noopener><i class="sidebar-button-icon fa fa-lg fa-github"></i><span class=sidebar-button-desc>GitHub</span></a></li></ul><ul class=sidebar-buttons></ul></div></nav><div id=main data-behavior=1 class=hasCoverMetaIn><article class=post itemscope itemtype=http://schema.org/BlogPosting><div class="post-header main-content-wrap text-center"><h1 class=post-title itemprop=headline>hugo로 Github 블로그 구축</h1><div class="postShorten-meta post-meta"><time itemprop=datePublished datetime=2020-03-21T16:02:28+09:00>21, 2020</time>
+<span></span><a class=category-link href=https://actumn.github.io/categories/github-blog>github blog</a></div></div><div class="post-content markdown" itemprop=articleBody><div class=main-content-wrap><p>jekyll을 버리고 다시 만들기.<br>있으나 마나 관리도 안하던 블로그 버리고 새로 시작하고자 다시 만듭니다.<br>기왕 만드는거 멋있게 hugo도 한번 써보고. Github Actions도 써보고.</p><h1 id=기존-컨텐츠-백업>기존 컨텐츠 백업</h1><p>기존 컨텐츠는 legacy 브랜치로 남겨두고<br>source에 orphan 브랜치(부모가 없는 브랜치)를 새로 만듭시다.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>$ git clone actumn.github.io
+$ cd actumn.github.io
+$ git checkout -b legacy
+$ git push origin legacy
+$ git branch -d master
+$ git checkout --orphan source
+$ git rm -rf .
+</code></pre></div><h1 id=시작>시작</h1><p>이제 hugo 튜토리얼을 파봅시다<br><a href=https://gohugo.io/getting-started/quick-start/>hugo 튜토리얼</a>
+<a href=https://gohugo.io/getting-started/installing>hugo 설치</a></p><h2 id=설치>설치</h2><p>제 환경은 우분투입니다. homebrew는 쓰고 싶지 않아요.<br>그래서 hugo레포 clone받아서 빌드합니다.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>$ mkdir $HOME/src
+$ cd $HOME/src
+$ git clone https://github.com/gohugoio/hugo.git
+$ cd hugo
+$ go install --tags extended
+</code></pre></div><p><code>apt-get</code>은 상당히 낮은 버전으로 설치가 되기 때문에 추천하지 않습니다.</p><h2 id=생성>생성</h2><p>설치가 완료되었으면 새로운 사이트를 시작합니다.<br>저는 actumn.github.io 에서 작업하고 있으므로 현재 디렉토리에 시작합니다</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>$ hugo new site ./ --force
+Congratulations! Your new Hugo site is created in /home/actumn/repos/actumn.github.io/actumn.github.io.
+
+Just a few more steps and you are ready to go:
+
+1. Download a theme into the same-named folder.
+   Choose a theme from https://themes.gohugo.io/, or
+   create your own with the <span style=color:#e6db74>&#34;hugo new theme &lt;THEMENAME&gt;&#34;</span> command.
+2. Perhaps you want to add some content. You can add single files
+   with <span style=color:#e6db74>&#34;hugo new &lt;SECTIONNAME&gt;/&lt;FILENAME&gt;.&lt;FORMAT&gt;&#34;</span>.
+3. Start the built-in live server via <span style=color:#e6db74>&#34;hugo server&#34;</span>.
+
+Visit https://gohugo.io/ <span style=color:#66d9ef>for</span> quickstart guide and full documentation.
+</code></pre></div><h2 id=테마-고르기>테마 고르기</h2><p><a href=https://themes.gohugo.io/>여기</a>에서 테마들을 찾아볼 수 있습니다.</p><p><a href=https://github.com/kakawait/hugo-tranquilpeak-theme>https://github.com/kakawait/hugo-tranquilpeak-theme</a><br>저는 이 테마가 마음에 들었습니다.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>$ git submodule add https://github.com/kakawait/hugo-tranquilpeak-theme.git themes/tranquilpeak
+$ echo <span style=color:#e6db74>&#39;theme = &#34;tranquilpeak&#34;&#39;</span> &gt;&gt; config.toml
+</code></pre></div><h2 id=글-쓰기>글 쓰기</h2><p>이제 글을 써 볼까요</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>$ hugo new post/my-first-post.md
+</code></pre></div><p>그러면</p><pre><code>---
+title: &quot;My First Post&quot;
+date: 2020-03-22T22:56:36+09:00
+draft: true
+---
+</code></pre><p>대략 이렇게 나올겁니다.<br>이제 마크다운으로 컨텐츠를 작성하면 됩니다.</p><div class="alert warning"><p><strong>여기서</strong> draft: true 일 경우 빌드할때 제외됩니다. 글을 다 작성하면 draft 옵션을 삭제합시다.</p></div><h2 id=테스트>테스트</h2><p>잘 되는지 테스트를 해봅시다.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>$ hugo server -D
+</code></pre></div><p><img src=https://actumn.github.io/images/blog_1.png alt=image>
+여기까지만 하면 사이트는 보이는데 작성한 글은 안보이네요.<br>여기서부턴 theme별로 config를 만져줘야 합니다.</p><h2 id=configtoml>config.toml</h2><p>config를 만져줍시다.<br>제가 고른 theme의
+<a href=https://github.com/kakawait/hugo-tranquilpeak-theme/blob/master/docs/user.md>유저 가이드</a>와 <a href=https://github.com/kakawait/hugo-tranquilpeak-theme/blob/master/exampleSite/config.toml>example site config</a> 를 참조해서 적당히 만져보겠습니다.</p><pre><code>baseURL = &quot;actumn.github.io&quot;
+languageCode = &quot;en-us&quot;
+defaultContentLanguage = &quot;ko-kr&quot;
+title = &quot;Actumn (SunMyeong Lee)&quot;
+theme = &quot;tranquilpeak&quot;
+disqusShortname = &quot;hugo-tranquilpeak-theme&quot;
+# googleAnalytics = &quot;UA-123-45&quot;
+paginate = 7
+canonifyurls = true
+
+[permalinks]
+  post = &quot;/:year/:month/:slug/&quot;
+
+[taxonomies]
+  tag = &quot;tags&quot;
+  category = &quot;categories&quot;
+  archive = &quot;archives&quot;
+
+[author]
+  name = &quot;SunMyeong Lee&quot;
+  bio = &quot;I love _language learning_, _development_, _open source_&quot;
+  job = &quot;Student&quot;
+  location = &quot;Seoul, Korea&quot;
+  # Your Gravatar email. Overwrite `author.picture` everywhere in the blog
+  gravatarEmail = &quot;actumn814@gmail.com&quot;
+  # Your profile picture
+  # Overwritten by your gravatar image if `author.gravatarEmail` is filled
+  picture = &quot;https://cdn1.iconfinder.com/data/icons/ninja-things-1/1772/ninja-simple-512.png&quot;
+  # Your Twitter username without the @. E.g : thibaudlepretre
+  # twitter = &quot;thibaudlepretre&quot;
+  # Your google plus profile id. E.g : +ThibaudLepretre or 114625208755123718311
+  # googlePlus = &quot;+ThibaudLepretre&quot;
+
+# Menu Configuration
+[[menu.main]]
+  weight = 1
+  identifier = &quot;home&quot;
+  name = &quot;Home&quot;
+  pre = &quot;&lt;i class=\&quot;sidebar-button-icon fa fa-lg fa-home\&quot;&gt;&lt;/i&gt;&quot;
+  url = &quot;/&quot;
+[[menu.main]]
+  weight = 2
+  identifier = &quot;categories&quot;
+  name = &quot;Categories&quot;
+  pre = &quot;&lt;i class=\&quot;sidebar-button-icon fa fa-lg fa-bookmark\&quot;&gt;&lt;/i&gt;&quot;
+  url = &quot;/categories&quot;
+[[menu.main]]
+  weight = 3
+  identifier = &quot;tags&quot;
+  name = &quot;Tags&quot;
+  pre = &quot;&lt;i class=\&quot;sidebar-button-icon fa fa-lg fa-tags\&quot;&gt;&lt;/i&gt;&quot;
+  url = &quot;/tags&quot;
+[[menu.main]]
+  weight = 4
+  identifier = &quot;archives&quot;
+  name = &quot;Archives&quot;
+  pre = &quot;&lt;i class=\&quot;sidebar-button-icon fa fa-lg fa-archive\&quot;&gt;&lt;/i&gt;&quot;
+  url = &quot;/archives&quot;
+[[menu.main]]
+  weight = 5
+  identifier = &quot;about&quot;
+  name = &quot;About&quot;
+  pre = &quot;&lt;i class=\&quot;sidebar-button-icon fa fa-lg fa-question\&quot;&gt;&lt;/i&gt;&quot;
+  url = &quot;/#about&quot;
+
+[[menu.links]]
+  weight = 1
+  identifier = &quot;github&quot;
+  name = &quot;GitHub&quot;
+  pre = &quot;&lt;i class=\&quot;sidebar-button-icon fa fa-lg fa-github\&quot;&gt;&lt;/i&gt;&quot;
+  url = &quot;https://github.com/actumn&quot;
+#[[menu.links]]
+#  weight = 2
+#  identifier = &quot;stackoverflow&quot;
+#  name = &quot;Stack Overflow&quot;
+#  pre = &quot;&lt;i class=\&quot;sidebar-button-icon fa fa-lg fa-stack-overflow\&quot;&gt;&lt;/i&gt;&quot;
+#  url = &quot;https://stackoverflow.com/users/636472/kakawait&quot;
+
+#[[menu.misc]]
+#  weight = 1
+#  identifier = &quot;rss&quot;
+#  name = &quot;RSS&quot;
+#  pre = &quot;&lt;i class=\&quot;sidebar-button-icon fa fa-lg fa-rss\&quot;&gt;&lt;/i&gt;&quot;
+#  url = &quot;/index.xml&quot;
+
+[params]
+  # Customize date format use to render blog post date, categories and other
+  # You must use date format used by Go Time package https://golang.org/pkg/time/
+  # Months (not work with short month like &quot;jan&quot;, &quot;feb&quot;, etc) are translated if translation exists on i18n folders
+  # Default format is: January 2, 2006
+  # dateFormat = &quot;2 January 2006&quot;
+
+  # Global keywords configuration. Following keywords will be add to every pages
+  # keywords = [&quot;development&quot;, &quot;next-gen&quot;]
+
+  # Syntax highlighter, possible choice between: &quot;highlight.js&quot; (recommanded) and &quot;prism.js&quot; (experimental)
+  # You can comment it to disable syntax highlighting
+  syntaxHighlighter = &quot;highlight.js&quot;
+
+  # Hide sidebar on all article page to let article take full width to improve reading, and enjoy wide images and cover images. (true: enable, false: disable)
+  clearReading = false
+
+  # Define categories will create hierarchy between parents: `categories = [&quot;foo&quot;, &quot;bar&quot;]` will consider &quot;bar&quot; a sub-category of &quot;foo&quot;.
+  # If false it will flat categories.
+  hierarchicalCategories = true
+
+  description = &quot;Hugo tranquilpeak theme demo&quot;
+
+  # Customization
+  # Define the behavior of the sidebar
+  # 1: Display extra large sidebar on extra large screen, large sidebar on large screen,
+  #    medium sidebar on medium screen and header bar on small screen and
+  # extra large sidebar is swiped on extra large screen and large sidebar on all lower screen (default)
+  # 2: Display large sidebar on large screen, medium sidebar on medium screen and
+  #    header bar on small screen and large sidebar is swiped
+  # 3: Display medium sidebar on large and medium screen and header bar on small screen and
+  #    medium sidebar is swiped
+  # 4: Display header bar on all screens, extra large sidebar is swiped on extra large screen and
+  #    large sidebar is swiped on all lower screens
+  # 5: Display header bar on all screens and large sidebar is swiped on large screen
+  # 6: Display header bar on all screens and medium sidebar is swiped
+  sidebarBehavior = 1
+
+  # Your blog cover picture. I STRONGLY recommend you to use a CDN to speed up loading of pages.
+  # There is many free CDN like Cloudinary or you can also use indirectly
+  # by using services like Google Photos.
+  # Current image is on AWS S3 and delivered by AWS CloudFront.
+  # Otherwise put your image, for example `cover.jpg` in folder `static/images/`,
+  # and use relative url : `images/cover.jpg`
+  coverImage = &quot;images/cover-v1.2.0.jpg&quot;
+
+  # Display an image gallery at the end of a post which have photos variables (false: disabled, true: enabled)
+  imageGallery = true
+
+  # Display thumbnail image of each post on index pages (false: disabled, true: enabled)
+  thumbnailImage = true
+  # Display thumbnail image at the right of title in index pages (`right`, `left` or `bottom`)
+  # Set this value to `right` if you have old posts to keep the old style on them
+  # and define `thumbnailImagePosition` on a post to overwrite this setting
+  thumbnailImagePosition = &quot;bottom&quot;
+  # Automatically select the cover image or the first photo from the gallery of a post if there is no thumbnail image as the thumbnail image
+  # Set this value to `true` if you have old posts that use the cover image or the first photo as the thumbnail image
+  # and set `autoThumbnailImage` to `false` on a post to overwrite this setting
+  autoThumbnailImage = true
+
+  # Your favicon path, default is &quot;/favicon.png&quot;
+  # favicon = &quot;/favicon.png&quot;
+
+  # Header configuration
+  # The link at the right of the header is customizable
+  # You can add a link (as an icon) at the right of the header instead of the author's gravatar image or author's picture.
+  # By default, author's gravatar or author's picture is displayed.
+  #     url: /#search
+  #     icon: search
+  #     class: st-search-show-outputs
+
+  # Display `Next` on left side of the pagination, and `Prev` on right side one.
+  # If you set this value to `true`, these positions swap.
+  # swapPaginator = true
+
+  # Custom CSS. Put here your custom CSS files. They are loaded after the theme CSS;
+  # they have to be referred from static root. Example
+  # [[params.customCSS]]
+  #   href = &quot;css/mystyle.css&quot;
+
+  # Custom JS. Put here your custom JS files. They are loaded after the theme JS;
+  # they have to be referred from static root. Example
+  # [[params.customJS]]
+  #   src = &quot;js/myscript.js&quot;
+
+  # Sharing options
+  # Comment and uncomment to enable or disable sharing options
+  # If you wanna add a sharing option, read user documentation :
+  # Tranquilpeak configuration &gt; Theme configuration &gt; sharing-options
+  [[params.sharingOptions]]
+    name = &quot;Facebook&quot;
+    icon = &quot;fa-facebook-official&quot;
+    url = &quot;https://www.facebook.com/sharer/sharer.php?u=%s&quot;
+
+  #[[params.sharingOptions]]
+  #  name = &quot;Twitter&quot;
+  #  icon = &quot;fa-twitter&quot;
+  #  url = &quot;https://twitter.com/intent/tweet?text=%s&quot;
+
+  #[[params.sharingOptions]]
+  #  name = &quot;Google+&quot;
+  #  icon = &quot;fa-google-plus&quot;
+  #  url = &quot;https://plus.google.com/share?url=%s&quot;
+
+  [params.header.rightLink]
+    class = &quot;&quot;
+    icon = &quot;&quot;
+    url = &quot;/#about&quot;
+
+  # Customize link of author avatar in sidebar
+  # [params.sidebar.profile]
+  #   url = &quot;/#about&quot;
+
+  # Customize copyright value &quot;© 2017 &lt;CUSTOMIZATION&gt;. All Rights Reserved&quot;
+  # [params.footer]
+  #   copyright = &quot;&lt;a href=\&quot;https://github.com/kakawait\&quot;&gt;kakawait&lt;/a&gt;&quot;
+</code></pre><p>이제 다시 실행을 해 보면</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>hugo server -D
+</code></pre></div><p>짜잔
+<img src=https://actumn.github.io/images/blog_2.png alt=image></p><h2 id=빌드>빌드</h2><p>이제 readme로 html 코드를 만들어봅시다.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>hugo -D
+</code></pre></div><p>그러면 <code>public</code>이라는 폴더에 컨텐츠가 생성됩니다.
+<img src=https://actumn.github.io/images/blog_3.png alt=image></p><p>하지만 빌드는 github actions로 할거에요. 넘어갑시다.</p><h2 id=github-actions>Github Actions</h2><p>이제 github에 올립시다.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>$ git push origin source
+</code></pre></div><p>아까 했던 빌드, 그리고 배포는 github actions로 합니다.
+자세한 바는 <a href=https://github.com/peaceiris/actions-hugo>https://github.com/peaceiris/actions-hugo</a> 에 안내되어 있습니다.<br>Github 화면에서 github actions -> new workflow 하고 아래처럼 yml을 구성합시다.</p><p>main.yml</p><pre><code>name: github pages
+
+on:
+  push:
+    branches:
+      - source
+
+jobs:
+  deploy:
+    runs-on: ubuntu-18.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: '0.62.2'
+          # extended: true
+
+      - name: Build
+        run: hugo --minify
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: master  # deploying branch
+</code></pre><p><img src=https://actumn.github.io/images/blog_4.png alt=images></p><h2 id=확인>확인</h2><p>이제 Github 빌드를 확인해봅시다.<br><img src=https://actumn.github.io/images/blog_5.png alt=images></p><p>잘 됩니다. <a href=https://actumn.github.io>https://actumn.github.io</a> 에도 잘 배포되었습니다.</p><h1 id=마무리>마무리</h1><p>휴. 글 하나 쓰니 뿌듯합니다.<br>이제 똥글 열심히 싸겠습니다.</p></div></div><div id=post-footer class="post-footer main-content-wrap"><div class=post-footer-tags><span class="text-color-light text-small"></span><br><a class="tag tag--primary tag--small" href=https://actumn.github.io/tags/hugo/>hugo</a></div><div class=post-actions-wrap><nav><ul class="post-actions post-action-nav"><li class=post-action><a class="post-action-btn btn btn--disabled"><i class="fa fa-angle-left"></i><span class="hide-xs hide-sm text-small icon-ml"></span></a></li><li class=post-action><a class="post-action-btn btn btn--disabled"><span class="hide-xs hide-sm text-small icon-mr"></span><i class="fa fa-angle-right"></i></a></li></ul></nav><ul class="post-actions post-action-share"><li class="post-action hide-lg hide-md hide-sm"><a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions><i class="fa fa-share-alt"></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#disqus_thread><i class="fa fa-comment-o"></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#><i class="fa fa-list"></i></a></li></ul></div><div id=disqus_thread><noscript>Please enable JavaScript to view the <a href=//disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript></div></div></article><footer id=footer class=main-content-wrap><span class=copyrights>&copy; 2020 SunMyeong Lee.</span></footer></div><div id=bottom-bar class=post-bottom-bar data-behavior=1><div class=post-actions-wrap><nav><ul class="post-actions post-action-nav"><li class=post-action><a class="post-action-btn btn btn--disabled"><i class="fa fa-angle-left"></i><span class="hide-xs hide-sm text-small icon-ml"></span></a></li><li class=post-action><a class="post-action-btn btn btn--disabled"><span class="hide-xs hide-sm text-small icon-mr"></span><i class="fa fa-angle-right"></i></a></li></ul></nav><ul class="post-actions post-action-share"><li class="post-action hide-lg hide-md hide-sm"><a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions><i class="fa fa-share-alt"></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#disqus_thread><i class="fa fa-comment-o"></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#><i class="fa fa-list"></i></a></li></ul></div></div><div id=share-options-bar class=share-options-bar data-behavior=1><i id=btn-close-shareoptions class="fa fa-close"></i><ul class=share-options></ul></div><div id=share-options-mask class=share-options-mask></div></div><div id=about><div id=about-card><div id=about-btn-close><i class="fa fa-remove"></i></div><img id=about-card-picture src="https://www.gravatar.com/avatar/8c162af52bd6a1258c11ddf087e2af65?s=110" alt><h4 id=about-card-name>SunMyeong Lee</h4><div id=about-card-bio>I love <em>language learning</em>, <em>development</em>, <em>open source</em></div><div id=about-card-job><i class="fa fa-briefcase"></i><br>Student</div><div id=about-card-location><i class="fa fa-map-marker"></i><br>Seoul, Korea</div></div></div><div id=cover style=background-image:url(https://actumn.github.io/images/cover-v1.2.0.jpg)></div><script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin=anonymous></script><script src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js integrity="sha256-/BfiIkHlHoVihZdc6TFuj7MmJ0TWcWsMXkeDFwhi0zw=" crossorigin=anonymous></script><script src=https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.7/js/jquery.fancybox.min.js integrity="sha256-GEAnjcTqVP+vBp3SSc8bEDQqvWAZMiHyUSIorrWwH50=" crossorigin=anonymous></script><script src=https://actumn.github.io/js/script-pcw6v3xilnxydl1vddzazdverrnn9ctynvnxgwho987mfyqkuylcb1nlt.min.js></script><script lang=javascript>window.onload=updateMinWidth;window.onresize=updateMinWidth;document.getElementById("sidebar").addEventListener("transitionend",updateMinWidth);function updateMinWidth(){var sidebar=document.getElementById("sidebar");var main=document.getElementById("main");main.style.minWidth="";var w1=getComputedStyle(main).getPropertyValue("min-width");var w2=getComputedStyle(sidebar).getPropertyValue("width");var w3=getComputedStyle(sidebar).getPropertyValue("left");main.style.minWidth=`calc(${w1} - ${w2} - ${w3})`;}</script><script>$(document).ready(function(){hljs.configure({classPrefix:'',useBR:false});$('pre.code-highlight > code, pre > code').each(function(i,block){if(!$(this).hasClass('codeblock')){$(this).addClass('codeblock');}
+hljs.highlightBlock(block);});});</script><script>var disqus_config=function(){this.page.url='https:\/\/actumn.github.io\/2020\/03\/hugo%EB%A1%9C-github-%EB%B8%94%EB%A1%9C%EA%B7%B8-%EA%B5%AC%EC%B6%95\/';this.page.identifier='\/2020\/03\/hugo%EB%A1%9C-github-%EB%B8%94%EB%A1%9C%EA%B7%B8-%EA%B5%AC%EC%B6%95\/'};(function(){if(window.location.hostname=="localhost"){return;}
+var d=document,s=d.createElement('script');var disqus_shortname='hugo-tranquilpeak-theme';s.src='//'+disqus_shortname+'.disqus.com/embed.js';s.setAttribute('data-timestamp',+new Date());(d.head||d.body).appendChild(s);})();</script></body></html>
