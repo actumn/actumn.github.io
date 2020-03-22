@@ -1,7 +1,6 @@
 ---
 title: "hugo로 Github 블로그 구축"
 date: 2020-03-21T16:02:28+09:00
-draft: true
 comments: true
 metaAlignment: center
 categories:
@@ -95,6 +94,10 @@ draft: true
 ```
 대략 이렇게 나올겁니다.  
 이제 마크다운으로 컨텐츠를 작성하면 됩니다.  
+
+{{< alert warning >}}
+**여기서** draft: true 일 경우 빌드할때 제외됩니다. 글을 다 작성하면 draft 옵션을 삭제합시다.
+{{< /alert >}}
 
 ## 테스트
 잘 되는지 테스트를 해봅시다.
