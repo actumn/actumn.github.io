@@ -4,7 +4,7 @@ date: 2020-03-21T16:02:28+09:00
 comments: true
 metaAlignment: center
 categories:
-- github blog
+- github
 tags:
 - hugo
 ---
