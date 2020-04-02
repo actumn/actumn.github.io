@@ -7,6 +7,7 @@ categories:
 - github
 tags:
 - hugo
+- github
 ---
 
 jekyll을 버리고 다시 만들기.  

@@ -23,7 +23,7 @@ Node.js의 디자인 철학.
 를 의미합니다.
 
 
-그래서 Node.js의 철학은  
+Node.js의 철학은 아래와 같습니다.
 - Small Core (경량코어)
 
 - Small Modules (경량 모듈)
@@ -32,4 +32,6 @@ Node.js의 디자인 철학.
 
 - Simplicity and Pragmatism (간결함과 실용 주의)
 
+
+### Refernce
 https://subscription.packtpub.com/book/web_development/9781783287314/1/ch01lvl1sec08/the-node-js-philosophy  
