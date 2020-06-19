@@ -15,3 +15,6 @@ draft: true
 
 <!--more-->
 https://namelix.com/app/
+https://hatchful.shopify.com/
+https://placeit.net/logo-maker
+http://ivantomic.com/projects/ospnc/
