@@ -564,4 +564,276 @@ SDN: Network 가상화 기술. (Software Defined Network)
       - action: rewrite
 ![IMAGE](/images/kucse-computer-network-2/network-sdn-openflow-example.png)
     
-  
+# Chapter 5: Network Layer: The control plane
+Chapter Goals
+- traditional routing algorithm
+- SDN controllers
+- Internet Control Message Protocol: ICMP
+- network management: SNMP
+- OSPF: routing algorithm, BGP, **OpenFlow**, ODL, ONOS, ICMP, SNMP
+
+## 1. Introduction
+- Network-layer functions
+  - forwarding: data plane
+  - routing: control plane
+  - Two approaches
+    - per-router control (traditional)
+    - logically centralized control (software defined networking)
+  - Per-router control plane
+![IMAGE](/images/kucse-computer-network-2/control-intro-router.png)
+  - Logically centralized control plane
+![IMAGE](/images/kucse-computer-network-2/control-intro-centralized.png)
+
+## 2. Routing Protocols
+- goal: "good" path를 결정한다.
+  - "good": least cost, feastest, least congested
+  - routing: "top-10" challenge
+- A link-state routing algorithm
+  - Dijkstra's algorithm
+    - 다익스트라. 
+    - 모든 노드가 완벽한 정보를 알고 있다. (그래프 연결, 엣지간 코스트 등)
+    - 그걸로 각자 계산
+    - least cost path. 최소 경로를 찾자. 자기 자신부터 모든 노드까지
+    - k iteration
+    - notation
+      - C(x,y): x와 y 사이 cost
+      - D(v): source부터 v까지 현재 최솟값
+      - p(v): v까지 가는 경로의 직전 노드
+      - N`: 현재까지 계산한 것중 확정된 것. 더 이상 짧은 길이 존재하지 않는다.
+![IMAGE](/images/kucse-computer-network-2/control-algorithm-linkstate.png)
+      - complexity
+        - $n(n+1)/2 = O(n^2)$
+        - 효율적인 구현: $O(nlogn)$
+    - link state는 모든 노드가 다 각자 완벽한 그래프 정보를 수집, 각자 계산
+      - 완벽한 정보를 수집하기 위해 broadcast
+      - 모든 정보가 교환될 떄 까지 계산 안하다가 한꺼번에 계산
+- Distance vector algorithm
+  - 이웃된 노드하고만 정보 교환
+  - k 번 정보교환으로 routing table 완성
+  - Bellman-ford
+![IMAGE](/images/kucse-computer-network-2/control-algorithm-ds.png)
+  - distance vector가 단순하니까 많이 쓰지만
+    - 완벽한 정보를 모아서 계산하는게 아니라 현재 상태에서 계산.
+    - 실제로 라우터에선 RIP 하는 경우 30초마다 계산
+    - maximum hop count가 15라고 한다면 7.5분이 걸린다.
+    - 중간에 링크 1개가 끊어지면?
+      - 최정 경로 탐색까지 30초, 1분, 1분 30초, .... 걸리게 된다.
+![IMAGE](/images/kucse-computer-network-2/control-algorithm-ds-problem.png)
+  - Comparision of LS and DS algorithm
+    - message complexity
+      - LS: n 노드 수, e Edge 수 -> $O(nE)$
+      - DV: neighbor 끼리만 exchange. convergence time이 가변적.
+    - speed of convergence
+      - LS: $O(n^2)$ for $O(nE)$ messages
+      - DV: 가변적, LS보다 느리다
+    - robustness: router 하나가 고장나면?
+      - LS: 한꺼번에 broadcast
+        - 중간에 hacker가 개입하지 않도록 authentication 해야함
+      - DV: error propagate 에 시간이 많이 걸린다.
+## 3. Infra-AS routing in the Internet: OSPF
+- Making routing scalable
+  - 망이 늘어남에 따라 목적지가 늘어난다.
+  - routing table size가 기하급수적으로 늘어나면 안된다.
+  - 어떻게 줄일까?
+  - 이상적
+    - 모든 router는 identical (똑같지 않다. 기관이 다르고 ... 국가가 다르고 ...)
+    - network "flat"
+  - scale: 도착지가 몇십억
+    - router에 모든 주소를 다 넣을 수 없다!
+  - administrative autonomy
+    - 망마다 자치
+    - internet: 네트워크의 네트워크
+    - 각 network admin, 기관마다 네트워크 알아서 해라. (너네는 DV 해라, 우리는 LS 하겠다.)
+- Internet approach to scalable routing
+  - AS "autonomous systems"
+  - Infra-AS routing
+    - 기관 내 라이터들끼리 라우팅 프로토콜 알아서 해라
+  - Inter-AS routing
+    - 기관 별, 바깥 세상 라우터끼리 정보교환
+  - Interconnected ASes
+![IMAGE](/images/kucse-computer-network-2/control-AS-inter.png)
+- Inter-AS tasks
+![IMAGE](/images/kucse-computer-network-2/control-AS-inter-tasks.png)
+  - 3a는 Intra-AS, Inter-AS 둘다 해야함.
+  - Inter-AS
+    - 3a->1c: AS3와 다른 네트워크 정보 전송
+    - 1c->3a: AS1, AS2, 그 외 네트워크 전보 3a에 전송
+  - Infra-AS
+    - 교환해서 자기만 갖고 있을 게 아니라 propagate 필요
+- Intra-AS Routing
+  - IGP (Interior gateway protocols)
+  - intra-AS의 대표적 프로토콜
+    - RIP: DV, metric: hop count
+    - OSPF: Ls, metric: bandwidth/delay, metric이 단순 (IS-IS 존재)
+    - IGRP: cisco가 만든, OSPF에서 발전한 protocol. metric이 복잡하다.
+  - OSPF (Open Shortest Path First)
+    - "open": 오픈소스다.
+    - link-state algorithm 사용
+      - link state broadcasting/flooding
+      - topology가 각 노드에
+      - 그래서 dijkstra로 shortest least cost path를 찾아낸다.
+    - flooding 한다.
+      - IP를 통해서 flooding 정보 공유 (TCP나 UDP를 쓰지않음.)
+      - link state
+    - Is-IS: OSPF랑 비숫
+  - OSPF "advanced" features
+    - security: authentication. (한 라우터가 잘못된 정보를 준다면 문제가 될 것.)
+    - multiple: same-cost paths 동일한 값 path 허용 => load balancing (RIP에선 단 1 경로)
+    - TOS 값에 따라 cost 측정 가능
+      - ex) satelite link 굉장히 느린데, 이메일 같은 건 이거 써도 됨.
+    - multicast 기능
+    - hierarchical OSPF
+      - 내부가 복잡하면 (건물 수십개) Flat보다 계층 라우팅이 효율적
+  - Hierarchical OSPF
+![IMAGE](/images/kucse-computer-network-2/control-OSPF.png)
+  - area2 에서 area1 을 알 필요가 없다.
+  - area별 OSPF
+  - two-level hierarchy: local area, backbone
+    - link-state advertisements
+  - area border
+  - backbone routers
+  - boundary routers
+## 4. routing among the ISPs: BGP
+요즘 BGP 안쓰는 데가 없다.
+- BGP (Border Gateway Protocol)
+  - 사실상 inter-domain routing protocol
+- BGP provides
+  - eBGP: external BGP
+    - 나한테 주면 여기저기 보낼 수 있다는 AS정보를 받을 수 있다.
+  - iBGP: internal BGP
+    - 받은 reachability information을 내부 라우터에 전달. 이렇게 forwarding table을 만든다.
+  - BGP에서 중요한건 policy
+    - intra-routing protocol에선 최소비용이 중요
+    - inter-routing protocol에선 최소경로보다 "reachability"
+    - 그래서 reachability information 교환.
+  - 다른 네트워크에 "I am here"을 알려준다. 알려주지 않으면 reachability가 전달되지 않음.
+- eBGP, iBGP connections
+![IMAGE](/images/kucse-computer-network-2/control-BGP.png)
+  - BGP session: 두 BGP 라우터가 주기적으로 정보교환
+    - 1개의 session을 만든다.
+    - TCP connection으로 교환하는건 path vector
+![IMAGE](/images/kucse-computer-network-2/control-BGP-basic.png)
+    - AS 3, X 에게 보낼 수 있음을 알려줌
+  - Path attributes and BGP routes
+    - 서로 교환하는 reachability information
+      - prefix + "attributes" = "route"
+      - 어떤 네트워크 + attributes
+    - Attributes에는
+      - AS-PATH: 이러이러한 경로를 통해 X까지 보내주겠다.
+      - NEXT-HOP: 갈때 next hop이 뭐다.
+    - Policy-based routing
+      - 정책적으로 결정한 바에 의해 routing 해주겠다. (reachability가 있다 / 없다)
+- BGP path advertisement
+![IMAGE](/images/kucse-computer-network-2/control-BGP-path.png)
+- BGP messages
+  - TCP 위에 connection 만들어서 정보 교환.
+    - OPEN: connection 만드는
+    - UPDATE: path. 새로운 경로를 알려준다. 또는 policy로 인해 withdraw
+    - KEEPALIVE: 계속 살린다
+    - NOTIFICATION: 에러 발생시 알려준다
+- BGP: achieving policy via advertisements
+![IMAGE](/images/kucse-computer-network-2/control-BGP-policy.png)
+  - BGP policy를 통해 transit traffic을 막을 수 있다.
+  - x: dual-homed. 2개 이상의 네트워크와 연결
+- Why different Intra-, Inter-AS routing?
+  - policy
+- scale
+  - hierarchical을 통해 scale할 수 있다
+- performance
+  - Inter-AS에선 policy가 더 중요
+
+## 5. SDN
+기존 라우터에서 하던 RIP, IP, IS-IS 등의 프로토콜을 전부 다른 서버/클라우드에서 한다 (control plane). data plane에는 하드웨어 기계만.  
+"middlebox": 다른 layer의 firewalls, load balancer, NAT boxes 등도 control plane에 존재 가능  
+최근 네트워크는 SDN. 이동통신사, Google
+- Why a logically centralized control plane?
+  - avoid router misconfiguration, great flexibility
+    - control을 맘대로 고칠 수 있다. 
+    - 기존 hardware-based 에선 Cisco, Huawei가 라우터 안고쳐주더라.
+  - table-based forwarding으로 프로그래밍이 가능해진다
+    - centralizzed easier
+    - distributed difficult: manufacturer가 입맞에 맞게 안고쳐주더라.
+  - open (non-proprietary)
+    - 소유권이 개방. module program들이 모두 옾느소ㅡ
+  - 비유
+![IMAGE](/images/kucse-computer-network-2/control-sdn-analogy.png)
+- Traffic engineering
+![IMAGE](/images/kucse-computer-network-2/control-sdn-traffic.png)
+  - `uxyz` 경로가 가장 빠른데, 로드밸런싱 목적으로 uvwz
+  - SDN에서 traffic engineering하기 편하다.
+  - tradition에선 바꾸기 어렵다.
+- SDN perspective: data plane switches
+  - Switch도 SDN 이용 가능
+- SDN perspective: SDN controller
+![IMAGE](/images/kucse-computer-network-2/control-sdn-controllers.png)
+  - southbound API: openflow
+  - northbound API: control plane은 controller가 필요
+- Components of SDN controller
+![IMAGE](/images/kucse-computer-network-2/control-sdn-components.png)
+  - **RESTful API**
+  - **OpenFLow**
+- OpenFlow protocol
+![IMAGE](/images/kucse-computer-network-2/control-sdn-openflow.png)
+  - controller와 스위치 사이 작동
+  - TCP 이용 + encryption
+  - 3가지 종류
+    - controller-to-switch
+    - asynchronous (switch-to-controller)
+      - 일방향. 문제발생 -> controller로 보낸다
+    - symmetric: 통계
+  - controller-to-swtich messages
+    - features: 스위치기능 query. 이때 switch reply
+    - configure
+    - modify-state: flow table operation
+    - packet-out: 에러처리? controller can send this packet out of specific switch port
+  - switch-to-controller
+    - packet-in: 처리 못하겠으면 controller에게
+    - flow-removed: 스위치에서 table entry가 삭제됐음을 보고
+    - port status: port 상태 변화 전송
+- OpenDayloght (ODL) controller
+![IMAGE](/images/kucse-computer-network-2/control-sdn-odl.png)
+  - ODL Lithium controller
+  - OpenFlow 1.0, SNMP
+  - RESTful API
+  - SAl, Network service apps 다 오픈소스다.
+- ONOS controller
+![IMAGE](/images/kucse-computer-network-2/control-sdn-onos.png)
+  - 통신회사에서 많이씀.
+- SDN challenges
+  - control plane: 잘 만들어야 한다. dependable , reliable 등등 골고루 잘 들어가야함
+  - rebustness to failures: 장애가 나더라도 잘 돌아가야한다.
+  - dependability, security
+  - networks
+    - ex) real-time, ultra-reliable, ultra-secure
+## 6. ICMP: The Internet Control Message Protocol
+에러가 나서 패킷을 버리게 되면 source에게 알려줘야 한다.
+- ICMP: internet control message protocol
+  - Error reporting
+    - 이유를 알려줘야 한다.
+![IMAGE](/images/kucse-computer-network-2/control-icmp-messages.png)
+  - Echo -> ping
+  - ICMP message
+    - type + code + 버린 패킷 8 bytes
+- Traceroute and ICMP
+  - 첫 패킷은 TTL = 1 이걸 3번
+  - 다음은 TTL = 2
+  ...
+  - TTL = n
+  - 중간에 어떤 node가 문제가 있는지 알 수 있다.
+
+## 7. Network management and SNMP
+- autonomous systems: 1000개 이상의 hardware / software
+- 다른 복잡한 시스템: management가 필요
+- Infrastructure for network management
+![IMAGE](/images/kucse-computer-network-2/control-snmp.png)
+  - managed device: 관리를 위한 MIB (Management Information Base)
+  - device 상태에 관한 Database
+  - Two ways
+![IMAGE](/images/kucse-computer-network-2/control-snmp-2ways.png)
+  - message types
+![IMAGE](/images/kucse-computer-network-2/control-snmp-types.png)
+  - message formats
+![IMAGE](/images/kucse-computer-network-2/control-snmp-formats.png)
+
+
+
