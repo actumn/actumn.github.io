@@ -836,4 +836,448 @@ Chapter Goals
 ![IMAGE](/images/kucse-computer-network-2/control-snmp-formats.png)
 
 
+# 6. The Link and LANs
+- 원칙
+  - error detection, correction (transfer의 error는 end-to-end)
+  - 이웃된 노드 연결 - channel. channel을 sharing 할 수도 (공기, bus)
+  - link layer addressing: 48 bits
+  - local area network: Ethernet, VLAN. Ehternet은 WAN에서도 쓰인다.
+## 1. Link layer: introduction
+- terminology
+  - 이웃된 노드간의 프로토콜
+    - host-router, router-router
+  - 이웃된 노드간의 연결을 link라 한다.
+    - wired link: 유선. bandwidth 혼자 다 씀
+    - wireless link: 무선. 기지국과 단말기. 느리고, 공유. host는 많음
+  - datalink layer의 통신 단위는 frame
+    - network packet
+      - ip: datagram
+      - transport: stream (TCP), datagram (UDP)
+  - data-link layer는 link로 연결된 물리적 이웃노드간 datagram을 전달해주는 역할 담당
+- Link layer: context
+  - 다른 링크라면 다른 link protocol
+    - ex) ehternet, frame relay, 802.11
+  - 각 link protocol은 다른 서비스 제공
+    - reliable 혹은 reliabe하지 않음
+- Link layer services
+  - framing
+    - network, ip에서 packet / datagram을 줬다.
+    - 이웃된 노드에게 전달해야한다.
+      - header와 trailer를 붙여서 framing, encapsulate
+    - shared medium이라면 누가 access하게 할 것인가.
+    - "MAC" 누가 매체를 차지하게 할 것인가.
+      - Medium Access Protocol. 이를 위한 주소 체계
+      - header에 source | destination 
+    - 이웃된 노드 간 reliable delivery
+      - 3장에서 하는 법을 배웠다.
+      - low-bit error. (fiber, some twisted pair)
+      - wireless links
+        - high error rates
+        - 왜 end-to-end reliability와 link-level reliablity 둘다 하지?
+        - -> IP가 unreliable하다. 중간 router가 packet drop, 혹은 순서가 바뀔 수도
+        - 따라서 datalink에서 에러처리 해도 완벽하지 않다.
+  - flow control: 받는 놈이 받을 수 있을 만큼 준다
+  - error detection: reliable service를 위해, 1의 보수 checksum
+  - error correction: 다시 보내기, 중복해서 보내기
+  - half-duplex and full-duplex
+    - half-duplex: 양방향. 한순간에 한쪽만
+    - full-duplex: 양방향, 동싱통신
+- Where is the link later implemented?
+![IMAGE](/images/kucse-computer-network-2/link-intro-lancard.png)
+  - LAN 카드. (또는 NIC 카드. Network Interface Card)
+  - 버스에 꼽혀있다.
+  - Ehternet card, 802.11 card, Ethernet chipset
+  - 카드니까 hardware + software + firmware
+- Adaptors communicating
+![IMAGE](/images/kucse-computer-network-2/link-intro-communicate.png)
+  - sending side
+    - frame encapsulation: ip packet을 담는다
+    - header에 LAN 카드 주소, checking bits
+  - receiving side
+    - error control
+    - flow control
+    - error recovery
+## 2. Error detection
+![IMAGE](/images/kucse-computer-network-2/link-error.png)
+EDC 체크해서 계산값과 같으면 -> 에러 X, 다르면 -> 에러
+- Parity checking
+  - single bit parity
+![IMAGE](/images/kucse-computer-network-2/link-error-single.png)
+    - 1 bit error를 감지
+    - odd number parity: 1의 갯수가 홀수인가
+    - even number parity: 1의 갯수가 짝수인가
+    - 비트가 2개 바뀌면 못잡아낸다
+  - two-dimensional bir parity
+![IMAGE](/images/kucse-computer-network-2/link-error-twodimen.png)
+    - 얘도 비트가 많이 틀리면 못잡아낸다.
+    - parity는 그냥 간단히 hardware 체크
+    - checksum을 많이 한다. UDP에서 했다.
+- Cyclic redundancy check (CRC)
+![IMAGE](/images/kucse-computer-network-2/link-error-crc.png)
+  - 많이 쓴다.
+  - G: 양쪽 값이 고정된 값.
+  - $ D * 2^r \text{ XOR } R $ 값이 G로 나누어 떨어져야한다.
+![IMAGE](/images/kucse-computer-network-2/link-error-crc-example.png)
 
+  
+## 3. Multiple access protocols
+매체를 공유할 때 (공기, 버스의 경우) 누가 매체를 차지하게 할 것인가
+- 두 가지 link type
+  - point-to-point
+    - PPP
+    - point-to-point link between Ethernet switch, host
+  - broadcast (매체를 공유하고 있음)
+    - upstream HFC: cable TV. 동축케이블 공유
+    - 802.11 wifi
+    - 인공위성
+- Multiple access protocols
+  - single shared broadcast channel
+    - channel을 sharing
+  - 경우에 따라 2개 이상의 노드가 전송을 하면 
+    - 충돌 발생. 패킷이 개진다. 재전송이 필요해짐
+  - multiple access protocols. MAC protocol
+    - 분산 알고리즘이다.
+    - control signal을 보내는 채널이 따로 없다. (no out-of-band channel, coordination)
+    - channel communication은 알아서 해야한다.
+  - An ideal multiple access protocol
+    - 전체 channel capacity가 R bps 일때 
+    - desiderata
+      - 1. 노드가 1개라면 R을 다 쓸수 있다.
+      - 2. 노드가 M개 있다고 하면 $R / M$ 만큼 갖게 해야함.
+      - 3. fully decentralized
+        - 중앙 집중 노드가 없다. 알아서 해야한다.
+        - no synchronization of clocks, slots
+      - 4. 단순할 수록 좋다.
+    
+- MAC protocols: taxonomy
+  - channel partitioning: channel을 나눠쓴다.
+    - TDMA: time division multiple access. 시간을 slot으로 나눠 쓴다.
+    - FDMA: frequency division multiple access. 주파수를 나눠서 사요
+    - CDMA: Code division multiple access. chipset이 각자 encoding
+  - random access
+    - 임의로 access. 충돌을 허용. recovery 방법 내장
+  - taking turns
+    - token 이 있어서 token 가진 애한테만 채널 사용
+    - 보낼 데이터가 많다면 혜택을 준다.
+- Channel partitioning MAC protocols: TDMA
+![IMAGE](/images/kucse-computer-network-2/link-mac-tdma.png)
+  - TDMA: time division multiple slots
+  - 장점: 1slot만큼 bandwidth guarantee
+  - 단점: 안쓰는 애한테도 channel 할당
+- Channel partitioning MAC protocols: FDMA
+![IMAGE](/images/kucse-computer-network-2/link-mac-fdma.png)
+  - FDMA: frequency division multiple access
+  - 동시에 다 보내기는 하지만 전체적인 bandwidth는 $ R/n $. 안쓰는 애 낭비
+
+- Random access protocols
+  - 누구든지 쓰고 싶을 때 써라. 몇가지 조건
+    - send 하려는 노드가 있으면 
+      - R을 혼자 다 쓴다.
+      - 중앙집중 노드가 coordination 하지 않음. 알아서 분산
+    - 2개 이상의 노드가 전송 -> collision
+  - random access protocol spec
+    - collision detect 방법이 있어야함.
+    - collision recover 방법이 있어야한다.
+  - examples
+    - slotted ALOHA
+    - ALOHA
+    - CSMA, CSMA/CD, CSMA/CA
+- Slotted ALOHA
+![IMAGE](/images/kucse-computer-network-2/link-ra-slotted.png)
+  - 가정
+    - 모든 프레임은 동일한 크기
+    - time을 equal size slot으로 나눈다
+    - slot이 시작할 때만 보낸다.
+    - 시작할 때만 보내므로 동기화
+    - 동시에 2개 이상의 노드가 보내면 충돌.
+    - 모든 노드가 collision detect 가능
+  - Operation
+    - 보낼 데이터가 있으면 slot이 시작되는 시간까지 기다린다.
+    - collision detection.
+      - 가능하면 한다 -> Ethernet (CSMA/CD)
+        - ack 에러가 났다고 바로 보내면 다시 충돌. wait time 조절
+      - 못하면 acknowledgement (CSMA/CA)
+        - 온다: OK
+        - 안온다: 재전송
+  - pros
+    - single active node가 channel을 다 쓸 수 있다.
+    - highly decentralized: node의 slot만 sync 필요
+    - simple
+  - cons
+    - collision이 일어나면 slot 낭비
+    - idel slot. 노는 slot이 있다.
+    - node들이 collision detect 방법을 알고 있어야한다.
+    - clock synchronization
+- Slotted ALOHA: efficiency
+  - n개의 경쟁: $ p(1-p)^{N-1} $ 확률로 성공.
+  - MAX efficiency: $ Np(1-p)^{N-1} $
+  - P를 잘 조절했을 때 최대 $ 1/e ~= 0.37 $
+  - 37%의 효율
+  - 그대로 단순해서 많이 쓴다.
+- Pure (unslotted) ALOHA
+![IMAGE](/images/kucse-computer-network-2/link-ra-unslotted.png)
+  - unslotted ALOHA: simpler, no synchronization
+  - 기다리지 않는다. 데이터가 있으면 바로 보낸다.
+  - 충돌이 훨씬 많이 일어 날 것.
+- Pure ALOHA efficiency
+  - $ p(1-p)^{N-1}(1-p)^{N-1} $
+  - $ = p(1-p)^{@(N-1)} $
+  - $ 1/2e ~= 18% $
+  - Slotted ALOHA보다 효율이 나쁘다.
+- CSMA (carrier sense mutliple access)
+  - CSMA: listen before transmit
+  - 보내기전에 채널, bus를 확인, 아무도 안보내면 내가 보낸다
+  - channel을 sense해보면, 보내고 있을 때 전압이나 전류가 다르다.
+    - idel일 때만 보낸다.
+    - busy할때는 기다린다.
+  - CSMA collisions
+    - 여전히 collision은 발생
+    - 거리가 있고, propagation delay가 있으므로
+  - CSMA/CD (collision detection)
+    - CSMA/CD: mechanism이 있다.
+    - 보내놓고 충돌이 일어나는지 확인
+      - 일어나면, 송신 중단 (재밍) 하고 나중에 아무도 안보낼 때 다시 보낸다.
+  - Ethernet CSMA/CD algorithm
+    - 충돌이 일어나고, 나중에 아무도 안보내서 다시 보냈더니 또 충돌이 일어날 수 있다.
+    - binary backoff: $ 0 < w < 2^{J} $인 난수 w, 여기서 J는 충돌횟수.
+  - efficiency
+  $$ efficiency = 1 / (1 + 5t(prop)/t(trans))$$
+    - ALOHA보다 훨씬 좋다.
+- "Taking turns" MAC protocols
+  - channel partitioning MAC protocosl
+    - 시분할 / 주파수 분할 / 코드분할
+    - $1/N$
+  - random access MAC protocosl
+    - low load: single node가 channel 다 쓰는게 가능
+    - high load: collision이 자주 일어나면 overhead
+  - "taking turns" protocols
+    - token등으로 돌아가면서 쓰게 한다.
+
+- polling
+![IMAGE](/images/kucse-computer-network-2/link-mac-turns-polling.png)
+  - master: control signal
+  - slave: 지시받은 대로 행동
+  - concerns
+    - polling overhead: 일일히 물어봐야한다.
+    - latency: 통신하는 데 걸리는 시간
+    - SPoF (master)
+- token passing
+![IMAGE](/images/kucse-computer-network-2/link-mac-turns-token.png)
+  - node끼리 token 전달
+  - token있는 동안 데이터 전송 가능
+
+- Cable access network
+![IMAGE](/images/kucse-computer-network-2/link-mac-cable.png)
+  - 이미 있는 cable network를 통해 인터넷을 한다.
+  - spliter: downstream 데이터를 보고 cable TV 신호면 TV로, 인터넷 신호면 modem으로
+  - cable network로 Internet frame, 케이블 TV chanelm, control.
+  - downstream만 있는게 아니고, upstream 도 있다
+    - internet frame
+    - TV remote control signal
+    - control signal
+  - downstream, upstream 주파수 대역이 다르다.
+  - downstream이 upstream보다 훨씬 빨라야 한다. 트래픽이 많을 것이므로
+    - multiple downstream 40Mbps, single CMTS가 40Mbps를 나눠서 전송
+    - multiple upstream 30Mbps. upstream 데이터가 적으모로 모든 유저가 channel을 time slot으로 경쟁
+  - cable
+![IMAGE](/images/kucse-computer-network-2/link-mac-cable2.png)
+    - 기본적으로 FDM: upstream, downstream 모두 주파수 분할해서 쓴다
+    - 경우에따라 TDP upstream: 데이터가 downstream에 비해 많지 않으므로 time slot 경쟁
+- CSMA/CA
+  - 무선에선 Collision Detection 불가. 
+  - 멀리 가면 signal이 약해진다. collision이 일어나도 감지 불가
+  - Collision Avoidance한다.
+- Taking turns
+  - Polling from control: Bluetooth
+  - Token passign: FDDI, token ring
+
+
+## 4. LANs
+data link layer와 physical layer를 포함한다. (2개를 cover한다.)  
+link layer를 또 2개로 나눈다: *MAC*, *LLC* (logical link control)
+LAN에서도 addressing한다. 48bits  
+ARP, Address Resolution Protocol  
+Ethernet 주소는 hardware board에 찍혀있다.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;자신의 IP는 쉽게 알 수 있다. 상대방의 주소는? IP는 알 수 있는데, Ethernet을 알려면 ARP 필요  
+Switch: 가장 유명한 link layer 장비  
+VLAN: 가상화  
+- Addressing
+  - 32-bit IP address:
+    - network-layer 주소 체계
+    - host를 찾을 땐 ip 주소로
+    - application 찾아갈 땐 transport layer 16 bits port number
+  - MAC (or LAN, Ehternet, physcial) address:
+    - 48 bit 주소
+    - LAN 카드에 찍혀있다
+    - 1A-2F-BB-76-09-AD
+    - ISP가 바뀌면 IP가 바뀌는데, MAC은 flat하다. (게층적이지 않음)
+  - LAN address and ARP
+![IMAGE](/images/kucse-computer-network-2/link-lan.png)
+    - LAN카드에 고유의 MAC주소가 찍혀있다
+    - 서로 통신하려면 IP주소 또는 MAC주소를 알고 있어야 한다.
+  - LAN 주소
+    - MAC 주소는 IEEE에서 관리
+    - 회사가 IEEE에서 MAC주소를 받아서 장사한다.
+    - 전세계에서 unique
+  - 비유
+    - MAC주소: 주민등록번호
+    - IP: 우편번호
+  - flat address -> 이전되도 MAC은 안바뀐다. portability 우수
+  - IP주소는 해당 네트워크에서 IPfmf qkedkdigka
+    - 계층적: subnet과 host
+  - ARP: address resolution protocol
+    - IP는 DNS라던가 cache로 알아낸다.
+    - LAN카드 주소는? ARP로 물어본다.
+    - 매 호스트마다 ARP table이 있어야한다, soft state: TTL 덕분에 시간 지나면 지워진다.
+      ```
+      IP | MAC | TTL
+      ```
+    - ARP broadcast: FF-FF-FF-FF-FF-FF
+      - 자기 Ethernet, IP address를 뿌릴것
+      - 상대가 받아서 응답. 서로 ARP table update
+    - "plug-and-play": 별도의 설정 없이 LAN카드가 알아서 다 한다.
+  - Addressing: routing to another LAN
+![IMAGE](/images/kucse-computer-network-2/link-lan-addressing.png)
+    - 같은 LAN이면 ARP, Ethernet 주소를 알게 된다.
+    - A에서 B로 통신하려면?
+      - B의 Ethernet 주소를 모른다.
+      - next hop인 router의 LAN카드 주소를 써서 보낸다.
+- Ethernet
+  - token ring, FDDI, ... 중에서 Ethernet이 이겼다.
+  - chip 하나로 구현, multiple speeds. 10M에 연결하면 10M, 1G에 연결하면 1G
+  - 인터넷 초창기부터 쓰이고
+  - 단순, 싸다
+  - speed가 10Mbps ~ 10Gbps
+![IMAGE](/images/kucse-computer-network-2/link-ehternet.png)
+    - bus broadcast
+    - CS해도 collision overhead
+    - 요즘은 Media sharing 하지 않음.
+    - 스위치구조를 bus가 아닌 crossbar로, CSMA/CD하면 충돌 안일어난다.
+  - physical topology
+    - bus: 90년대 많이 씀
+![IMAGE](/images/kucse-computer-network-2/link-ethernet-bus.png)
+    - star: 오늘날, switch 형태. CSMA/CD까지 하면 진짜 충돌 안일어난다.
+![IMAGE](/images/kucse-computer-network-2/link-ethernet-star.png)
+  - Ethernet frame structure
+![IMAGE](/images/kucse-computer-network-2/link-ethernet-frame.png)
+    - preamble
+      - synchronization 하기 위함
+      - 10101010으로 7bytes, 10101011로 마지막 1byte
+      - 이 패턴이 시작되면 프레임이 시작되는 걸 알 수 있다.
+      - clock sync도 하고, 프레임 감지
+    - addresses: source, destination MAC 주소
+      - dest부터 시작하고 source가 있음
+    - type: 대부분 IP지만, Novell IPX, AppleTalk등 있음
+    - CRC: cyclic redundancy check
+      - error detect: 에러나면 drop
+  - Ethernet: unreliable, connectionless
+    - 요즘은 에러가 정말 안난다.
+    - 하지만 에러가 나면 에러처리 안하고 drop
+    - LAN 중 대부분 conectionless
+      - connection 만드는 LAN: ATM
+    - connectionless: handshaking 안한다. 데이터 있으면 보낸다.
+    - unreliable: error가 있으면 drop
+      - 에러나면 처리는 TCP 아니면 Applicatio, 또는 안하던가
+    - MAC protocol은 CSMA/CD, 에러나면 binary backoff
+  - 802.3 ethernet standards: link & physcial layer
+    - 802.3: CSMA/CD
+    - MAC 위의 LLC는 생략되어 있다.
+    - differnet speeds: 2Mbps, 10Mpbs, 100Mbps, 10Gbps...
+![IMAGE](/images/kucse-computer-network-2/link-ethernet-standards.png)
+    - MAC protocol: ATM, token ring, CSMA/CD, CSMA/CA
+    - Physical
+      - 앞 숫자가 속도. 100BASE-Tx -> 100Mbps
+      - T: Twisted pair, F: Fiber
+- Ethernet switch
+  - link-layer device
+    - 자기 포트로 오는 frame을 조사해서 MAC주소를 보고 다른 곳으로 전달
+    - Bus건 Switch건 CSMA/CD
+      - 물론 Switch의 경우 collision이 일어나지 않음. 다른 장비 호환성을 위해.
+  - transparent
+    - host는 switch가 있는지 없는지 모른다.
+  - plug-and-play
+    - configure할 필요 없다.
+  - switch: multiple simulateneous transmissions
+![IMAGE](/images/kucse-computer-network-2/link-ethernet-switch.png)
+    - A->A\`, B->B\`가 동시에 발생해도 충돌이 일어나지 않는다.
+  - switch: self-learning
+![IMAGE](/images/kucse-computer-network-2/link-ethernet-switch-self.png)
+  - Interconnecting switches
+![IMAGE](/images/kucse-computer-network-2/link-ethernet-switch-multi.png)
+    - 매 스위치마다 self-learning
+  - Institutional network
+![IMAGE](/images/kucse-computer-network-2/link-ethernet-switch-institution.png)
+  - Switches vs router
+![IMAGE](/images/kucse-computer-network-2/link-ethernet-switch-routers.png)
+  - VLANs
+![IMAGE](/images/kucse-computer-network-2/link-ethernet-vlan.png)
+    - port-based VLAN
+      - 물리적으로 1개의 switch
+      - 논리적으로 2개의 switch
+    - traffic isolation 된다
+    - router에서 물리적 2개의 switch가 연결된 것 처럼 가능
+  - VLANS spanning multiple switches
+![IMAGE](/images/kucse-computer-network-2/link-ethernet-spanning.png)
+    - 포트는 16개. 조직이 커지면 switch 1개 더 연결
+    - 논리적으로 1개의 switch
+    - VLAN 할땐 VLAN ID를 쓴다.
+    - 2개 LAN 연결로 spanning 할땐 802.1q VLAN. 2byte tag, tag control
+## 5. link virtualization: MPLS
+- Multiprotocol label switching (MPLS)
+![IMAGE](/images/kucse-computer-network-2/link-mpls.png)
+  - IP: connectionless, 매 패킷을 독립적으로 전송
+  - 전파망: connection 위에 전송. 일단 1번 라우팅, 그 다음부턴 그대로 전송
+    - 첫번째 연결에서 모든 라우팅이나 기타 요구사항으로 리소스 reserve, 이후 그 ID로 모든걸 다 한다.
+  - label: 20bit짜리. connection 만들어줘서, forwarding을 빨리 할 수 있다.
+    - routing은 이미 결정 되어 있으므로, ip header가 아닌 MLPS header를 보고 routing
+  - Virtual circuit (VC) 을 만들어서
+  - IP header에 주소가 있긴 하다.
+- MLPS capable router
+  - label-switched router
+  - ip를 뒤져보지 않고, label을 뒤진다.
+    - MPLS forwading table 존재 (P는 독립적)
+  - flexibility: IP-목적지로 라우팅
+    - 얘는 목적지만이 아닌, source 주소, QoS라우팅 가능
+    - 목적지가 같으면 항상 같은길
+    - link fail이 났을 때: 좀 더 빨리 복구 가능
+      - pre-computed packup bath 지정 가능
+  - MPLS vs IP paths
+![IMAGE](/images/kucse-computer-network-2/link-mpls-ip.png)
+    - IP routing: destination 주소로만 forwarding
+    - MPLS: source를 참고해서 flexible 하게
+      - fast forwarding 가능
+      - security에서 유리
+      - 과금도 유리, label 단위, 시간 재기도 좋다.
+  - MPLS signaling
+![IMAGE](/images/kucse-computer-network-2/link-mpls-signaling.png)
+    - 사용자 데이터를 보내기 전에 라우팅 정보, 커넥션 만들기, 끊기 등
+    - control data를 보내는 걸 signaling이라 함
+    - RSVP
+      - MPEG => bandwidth 보장 필요. "reservation"
+      - Reservation Protocol
+      - connection 만들 때 reservation
+  - MPLS forwarding tables
+![IMAGE](/images/kucse-computer-network-2/link-mpls-tables.png)
+    - in label: 들어오는 패킷 label
+    - out label: 목적지가 A일 때 label을 붙여준다.
+      - locality: 들어올 때 10, 나갈때 6
+      - label 중복 가능성이 있으므로
+    - dest: 목적지
+    - out interface
+      - in-label, dest보고 결정.
+- data center networking
+  - 수 만개, 수십만개의 호스트로 구성
+    - 아마존, 유튜브, Akamai, Google
+  - challenges
+    - 각종 application이 있고, 수많은 유저가 있다.
+    - 어떻게 traffic을 분석해서 가장 효율적으로 access할 수 있을까?
+    - load balancing: 데이터 센터 트래픽이 상당하므로 bottle neck 발생 가능
+  - Data center networks
+![IMAGE](/images/kucse-computer-network-2/link-center.png)
+    - Tier-1 switch, Tier-2 switch, ToR: Top of the rack 스위치
+    - load balancer: application-layer routing
+    - rich interconnection among switches
+![IMAGE](/images/kucse-computer-network-2/link-center-interconnects.png)
+      - switch 간 bottleneck을 해결하기 위해
+      - 수많은 redundancy를 통해 reliability를 늘린다.
+      - 이 중 하나가 bottleneck이 걸리면 다른 곳으로 돌아가게. throughput을 늘리자.
