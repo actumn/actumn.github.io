@@ -70,7 +70,7 @@ http://pages.cs.wisc.edu/~remzi/OSTEP/#book-chapters
   - example
     ![IMAGE](/images/kucse-operating-system/process-states-ex.png)
   - data strutures: `/include/linux/sched.h`
-```c
+```
 struct task_struct {
 #ifdef CONFIG_THREAD_INFO_IN_TASK
 	/*
@@ -500,3 +500,1296 @@ $$ T_{turnaround} = T_{completion} - T_{arrival} $$
     - NUMA... CPU 패키지별로 메모리, 버퍼 할당.
       - CPU 패키지별로 load diff가 25% 보다 작으면 migration, load balancing 하지 않음.
   
+# Concurrency
+## Threads
+### (1)
+- Multi-threaded
+  - Multi process와 유사한 성격
+    - 자신만의 Program counter, 레지스터
+    - 스레드마다 스택
+  - 한 프로스세내 스레드들은 address space 공유
+  - Context switch
+    - TCP (Thraed Control Block), 리눅스에선 PCB, TCP 구분이 없다.
+    - Address space에 해당하는 부분은 그대로 둔다. (CR3 레지스터가 바뀌지 않는다.)
+![IMAGE](/images/kucse-operating-system/threads.png)
+- Why use threads?
+  - Parallelism, 병렬성
+    - Multiple core CPU가 계속 등장하고 있다.
+  - Avoiding blocking
+    - Slow I/O
+    - main thread만 있고, I/O block되면 다른 일을 못한다. 
+    - 다른 thread가 있고 다른 종류의 일을 실행할 수 있다면 성능 향상
+  - 많은 서버 application이 multi-threaded 다.
+- Thread creation
+  - pthread_create
+  - pthread_join: watis for the threads to finish
+  - Nondeterministic: 실행순서는 예측할 수 없음
+### (2)
+- Race condition
+![IMAGE](/images/kucse-operating-system/threads-race.png)
+- Critical section
+  - 공유되는 자원, 공유되는 변수들
+  - 반드시 1개의 thread 에서만 접근.
+- Mutual exclusion
+  - critical section에서 1개의 thread만 접근함을 보장
+- Atomicity
+  - critical section 구간 자체를 interrupt가 발생하지 않도록 만든다.
+  - 어떤 instruction이 중간에 interrupt 발생시 실행을 안하게, 또는 발생했음에도 instruction이 끝날때 까지 interrupt를 처리하지 않도록
+- How to support synchronization
+  - 하드웨어 제공 (atomic instructions)
+    - Atomic memory add: 대부분 CPU 제공.
+    - 자료구조는? Atomic update of B-Tree? CPU가 제공하기 어렵다. 회로도 복잡하고, Atomic 오버헤드. 
+  - OS가 Atomic instruction을 기반으로 좀 더 일반적인 동기화 primitives (system call) 를 제공
+- Mutex
+  - pthread_mutex_lock
+  - pthread_mutex_unlock
+  - pthread_mutex_trylock
+  - pthread_mutex_timedlock
+  - Initialization
+    - Static
+      ```
+      pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+      ```
+    - Dynamic
+      ```
+      int rc = pthread_mutex_init(&lock, NULL);
+      ```
+  - Destory
+    ```
+    pthread_mutex_destroy()
+    ```
+- Condition varibales
+  - pthread_cond_wait
+  - pthread_cond_signal
+  - 어떤 상태가 다른 CPU에 의해 바뀌었음을 인지하고, 바뀌었을 때 나에게 signal을 보내서 꺠워줄 수 있는 역할.
+  - Synchronizing two threads
+    ```
+    while (ready == 0) 
+        ; // spin
+    ```
+    ```
+    ready = 1;
+    ```
+    - spin lock, busy wait: CPU 낭비. 어떤 상태가 되기까지 기다리겠다.
+    - CPU cycle 낭비. 1 core CPU라면 thread 1 점유. 상태가 바뀌지도 않을텐데.
+    - 서로 다른 core라면
+      - 다른 CPU cache에 ready 값이 들어간다. 값 update를 알아차리기 위해 CPU 종류에 따른 cache coherence 알고리즘 의존적
+      - compiler optimization은?
+    - Condtition variable 활용
+    ```
+    pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+    pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+    pthread_mutex_lock(&lock);
+    while (ready == 0)
+    pthread_cond_wait(&cond, &lock);
+    pthread_mutex_unlock(&lock);
+    ```
+    ```
+    Pthread_mutex_lock(&lock);
+    ready = 1;
+    Pthread_cond_signal(&cond);
+    Pthread_mutex_unlock(&lock);
+    ````
+    - Compile
+    ```bash
+    gcc -o main main.c -Wall -pthread
+    ```
+## Locks
+- Pthread Locks
+```
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+...
+pthread_mutex_lock(&lock);
+counter = counter + 1; // critical section
+pthread_mutex_unlock(&lock);
+```
+- lock을 어떻게 구현하지?
+  - 하드웨어 support는?
+  - OS의 역할은?
+- Evaluation Locks
+  - Mutual exclusion (제일 중요)
+    - critical section 내에 1개의 thread만 진입
+  - Fairness
+    - lock 취득에 있어 fair한 순서보장
+  - Performance
+    - lock을 함에 따라 성능 하락이 있진 않은지
+    - thread 수, CPU 수에 따라 성능의 impact는?
+- Controlling Interrupts
+```
+void lock() {
+  DisableInterrupts();
+}
+void unlock() {
+  EnableInterrupts();
+}
+```
+  - 프로세스 스케쥴링에 있어 가장 중요한건 timer interrupt.
+  - Timer interrupt를 disable하면 timer interrupt가 발생하지 않음
+    - scheduling X, context switch X, race condition X
+  - 간단하지만 많은 단점
+    - privileged operation
+    - multiprocessor라면 통하지 않는다. (호출한 CPU만 Interrupt disable)
+    - interrupt 발생 가능성을 잃을 수 있다. 더 처리해야하는데, 덜 처리할 수 있다. 성능 저하 가능성
+    - 결정적으로 이런 시스템콜은 없다.
+- Spin locks with Load/Stores
+```
+typedef struct __lock_t { int flag; } lock_t;
+void init(lock_t *mutex) {
+    // 0 -> lock is available, 1 -> held
+    mutex->flag = 0;
+}
+void lock(lock_t *mutex) {
+    while (mutex->flag == 1)
+        ;
+    mutex->flag = 1;
+}
+void unlock(lock_t *mutex) {
+    mutex->flag = 0;
+}
+```
+| Thread 1 | Thread 2 |
+|---|---|
+| Call lock() |  |
+| while (flag == 1)? |  |
+| Context switch |  |
+|  | Call lock() |
+|  | while (flag == 1)? |
+|  | flag = 1; |
+|  | Context switch |
+| flag = 1; |  |
+  - No mutual exclusion
+  - Performance Problem
+    - waste time waiting
+
+### (2)
+- Spin locks
+  - Test-and-set atomic instruction
+    - 슈도코드. 실제로는 instruction 임
+    ```
+    int TestAndSet(int *old_ptr, int new) {
+        int old = *old_ptr; // fetch old value at old_ptr
+        *old_ptr = new; // store ’new’ into old_ptr
+        return old; // return the old value
+    }
+    ``` 
+    - 어떠한 preemption이 없음을 하드웨어가 보장
+- Spin locks with Test-and-Set
+```
+typedef struct __lock_t { int flag; } lock_t;
+void init(lock_t *lock) {
+    lock->flag = 0;
+}
+void lock(lock_t *lock) {
+    while (TestAndSet(&lock->flag, 1) == 1);
+}
+void unlock(lock_t *mutex) {
+    mutex->flag = 0;
+}
+```
+  - TestAndSet(0, 1) -> while 문을 빠져나감. lock 취득
+  - TestAndSet(1, 1) -> 계속 while.
+  - 문제점
+    - Not fair
+    - 성능. 
+      - single core -> thread가 많아지면 더 심각해짐. 
+      - unlcok 되기전에 ready queue에 들어가면?
+- Compare-and-swap atomic instruction
+```
+int CompareAndSwap(int *ptr, int expected, int new) {
+    int actual = *ptr;
+    if (actual == expected)
+        *ptr = new;
+    return actual;
+}
+```
+```
+void lock(lock_t *lock) {
+    while (CompareAndSwap(&lock->flag, 0, 1) == 1);
+}
+```
+  - CompareAndSwap(0, 0, 1) -> while문 빠져나감. lock 취득
+  - CompareAndSwap(1, 0, 1) -> 계속 while 대기
+  - 달라진 건 없다. 
+    - Mutex O
+    - Fair X
+    - Performance X
+- Ticket locks: 티켓을 나눠주고 돌려받는 대로.
+  - fetch-and-add atomic
+    ```
+    int FetchAndAdd(int *ptr) {
+        int old = *ptr;
+        *ptr = old + 1;
+        return old;
+    }
+    ```
+    ```
+    typedef struct __lock_t {
+        int ticket;
+        int turn;
+    } lock_t;
+    void lock_init(lock_t *lock) {
+        lock->ticket = 0;
+        lock->turn = 0;
+    }
+    void lock(lock_t *lock) {
+        int myturn = FetchAndAdd(&lock->ticket);
+        while (lock->turn != myturn);
+    }
+    void unlock(lock_t *lock) {
+        lock->turn = lock->turn + 1;
+    }
+    ```
+    - Fair O
+- Hardware support
+  - Too much spinning
+    - 성능관점 문제가 남아있다.
+  - A simple approach
+    - yield()
+      - CPU 자원을 포기하겠다. 다른 thread를 실행시켜라.
+      - 다만 scheduler는 다시 실행시킬 수 있다. vruntime등의 이유로
+    - 성능 관점에서 여전히 좋지 않다.
+    ```
+    void lock(lock_t *lock) {
+        while (TestAndSet(&lock->flag, 1) == 1)
+        yield();
+    }
+    ```
+      - 많은 thread가 round-robin 기반으로 schedule 된다면? vruntime 계산해봤더니 결국 그대로.
+      - spinning은 해결되지 않는다. 결국 같은 thread들이 반복해서 yield. => OS가 중요해진다.
+### (3)
+- OS Support
+  - Sleeping instead of spinning
+    - Solaris
+      - park(): 호출 thread를 재운다.
+      - unpark(threadID): 해당 thread를 꺠운다.
+    - Linux
+      - futex: fast user-level mutex
+      - futex_wait(address, expected)
+      - futex_wake(address): 잚든 thread를 꺠운다.
+      - address: lock variable
+      - queue 기반으로 재우고 꺠운다.
+- Lock with queue
+  - queue: lock을 기다리는 queue
+```
+typedef struct __lock_t {
+    int flag; // lock
+    int guard; // spin-lock around the flag and
+                   // queue manipulations
+    queue_t *q;
+} lock_t;
+void lock_init(lock_t *m) {
+    m->flag = 0;
+    m->guard = 0;
+    queue_init(m->q);
+}
+```
+```
+void lock(lock_t *m) {
+    while (TestAndSet(&m->guard, 1) == 1);
+    if (m->flag == 0) {
+        m->flag = 1; // lock is acquired
+        m->guard = 0;
+    } else {
+        queue_add(m->q, gettid());
+        m->guard = 0;
+        park(); // ** wakeup/waiting race **
+    }
+}
+void unlock(lock_t *m) {
+    while (TestAndSet(&m->guard, 1) == 1);
+    if (queue_empty(m->q))
+        m->flag = 0;
+    else
+        unpark(queue_remove(m->q));
+    m->guard = 0;
+}
+```
+  - TestAndSet ~ m->guard = 0 까지 atomic block. 
+  - unpark() => park() 하면?
+  - lock 호출 주체가 park()하기 전에, lock 을 가지고 있던 놈이 unpark()
+- 개선안.
+```
+void lock(lock_t *m) {
+    while (TestAndSet(&m->guard, 1) == 1);
+    if (m->flag == 0) {
+        m->flag = 1; // lock is acquired
+        m->guard = 0;
+    } else {
+        queue_add(m->q, gettid());
+        setpark(); // another thread calls unpark before
+        m->guard = 0; // park is actually called, the
+        park(); // subsequent park returns immediately
+    }
+}
+void unlock(lock_t *m) {
+    while (TestAndSet(&m->guard, 1) == 1);
+    if (queue_empty(m->q))
+        m->flag = 0;
+    else
+        unpark(queue_remove(m->q));
+    m->guard = 0;
+}
+```
+  - setpark() : unpark 호출이력 확인. 있는 경우 park()는 재우지 않음.
+
+## Lock-based Concurrnet Data Structures
+여러 개의 쓰레드가 접근하는 공유 자료구조  
+race condition을 해결할 방법들
+### (1)
+- Correctness
+  - race condition을 발생시키지 않도록 lock
+- Concurrency
+  - lock을 걸게 되면 performance 하락 (병렬성 저하)
+  - 최대한 효율적으로 쓸 방법은?
+
+- Concurrent Counters
+```
+typedef struct __counter_t {
+    int value;
+    pthread_mutex_t lock;
+} counter_t;
+void init(counter_t *c) {
+    c->value = 0;
+    pthread_mutex_init(&c->lock, NULL);
+}
+void increment(counter_t *c) {
+    pthread_mutex_lock(&c->lock);
+    c->value++;
+    pthread_mutex_unlock(&c->lock);
+}
+void decrement(counter_t *c) {
+    pthread_mutex_lock(&c->lock);
+    c->value--;
+    pthread_mutex_unlock(&c->lock);
+}
+int get(counter_t *c) {
+    pthread_mutex_lock(&c->lock);
+    int rc = c->value;
+    pthread_mutex_unlock(&c->lock);
+    return rc;
+}
+```
+- Sloppy counter
+  - Logical counter
+    - CPU core 별 logical counter
+    - Global counter
+    - Locks (각 local counter 별 하나씩, global counter 하나)
+  - Basic idea
+    - 각 CPU가 local counter를 갖고 있고, local counter에 있어선 중간 operation을 다른 core와 경쟁없이 반영.
+    - 주기적으로 global counter에 반영
+      - 자주 하면 sloppy counter의 장점이 퇴색, 드문드문하면 정확성 하락
+    - 임계 값을 정하는 것이 중요
+  - Example
+![IMAGE](/images/kucse-operating-system/lockbased-sloppy-counter.png)
+```
+typedef struct __counter_t {
+    int global;
+    pthread_mutex_t glock;
+    int local[NUMCPUS];
+    pthread_mutex_t llock[NUMCPUS];
+    int threshold; // ** update frequency **
+} counter_t;
+void init(counter_t *c, int threshold) {
+    c->threshold = threshold;
+    c->global = 0;
+    pthread_mutex_init(&c->glock, NULL);
+    int i;
+    for (i = 0; i < NUMCPUS; i++) {
+        c->local[i] = 0;
+        pthread_mutex_init(&c->llock[i], NULL);
+    }
+}
+```
+```
+void update(counter_t *c, int threadID, int amt) {
+    int cpu = threadID % NUMCPUS;
+    pthread_mutex_lock(&c->llock[cpu]); // local lock
+    c->local[cpu] += amt; // assumes amt > 0
+    if (c->local[cpu] >= c->threshold) {
+        pthread_mutex_lock(&c->glock);
+        c->global += c->local[cpu];
+        pthread_mutex_unlock(&c->glock);
+        c->local[cpu] = 0;
+    }
+    pthread_mutex_unlock(&c->llock[cpu]);
+}
+
+int get(counter_t *c) {
+    pthread_mutex_lock(&c->glock);
+    int val = c->global;
+    pthread_mutex_unlock(&c->glock);
+    return val; // only approximate!
+}
+```
+get의 정확성이 떨어진다. local counter update가 그때 그때 반영이 안되서. 성능은 좋아졌다.
+
+### (2)
+- Concurrent Linked Lists
+```
+typedef struct __node_t {
+    int key;
+    struct __node_t *next;
+} node_t;
+
+typedef struct __list_t {
+    node_t *head;
+    pthread_mutex_t lock;
+} list_t;
+
+void List_Init(list_t *L) {
+    L->head = NULL;
+    pthread_mutex_init(&L->lock, NULL);
+}
+
+int List_Insert(list_t *L, int key) {
+    pthread_mutex_lock(&L->lock);
+    node_t *new = malloc(sizeof(node_t));
+    if (new == NULL) {
+        perror("malloc");
+        pthread_mutex_unlock(&L->lock);
+        return -1; // fail
+    }
+    new->key = key;
+    new->next = L->head;
+    L->head = new;
+    pthread_mutex_unlock(&L->lock);
+    return 0; // success
+}
+
+int List_Lookup(list_t *L, int key) {
+    pthread_mutex_lock(&L->lock);
+    node_t *curr = L->head;
+    while (curr) {
+        if (curr->key == key) {
+            pthread_mutex_unlock(&L->lock);
+            return 0; // success
+        }
+        curr = curr->next;
+    }
+    pthread_mutex_unlock(&L->lock);
+    return -1; // failure
+}
+```
+Critical section이 너무 크다.
+- Scaling LinkedList
+  - 공유자원 접근하는 부분만 lock 하자.
+```
+void List_Init(list_t *L) {
+    L->head = NULL;
+    pthread_mutex_init(&L->lock, NULL);
+}
+void List_Insert(list_t *L, int key) {
+    // synchronization not needed
+    node_t *new = malloc(sizeof(node_t));
+    if (new == NULL) {
+        perror("malloc");
+        return;
+    }
+    new->key = key;
+    // just lock critical section
+    pthread_mutex_lock(&L->lock);
+    new->next = L->head;
+    L->head = new;
+    pthread_mutex_unlock(&L->lock);
+}
+
+int List_Lookup(list_t *L, int key) {
+    int rv = -1;
+    pthread_mutex_lock(&L->lock);
+    node_t *curr = L->head;
+    while (curr) {
+        if (curr->key == key) {
+            rv = 0;
+            break;
+        }
+        curr = curr->next;
+    }
+    pthread_mutex_unlock(&L->lock);
+    return rv; // bug pruning
+}
+```
+
+- Concurrent Queues
+```
+typedef struct __node_t {
+    int value;
+    struct __node_t *next;
+} node_t;
+
+typedef struct __queue_t {
+    node_t *head;
+    node_t *tail;
+    pthread_mutex_t headLock;
+    pthread_mutex_t tailLock;
+} queue_t;
+
+void Queue_Init(queue_t *q) {
+    node_t *tmp = malloc(sizeof(node_t)); // dummy node
+    tmp->next = NULL;
+    q->head = q->tail = tmp;
+    pthread_mutex_init(&q->headLock, NULL);
+    pthread_mutex_init(&q->tailLock, NULL);
+}
+
+void Queue_Enqueue(queue_t *q, int value) {
+    node_t *tmp = malloc(sizeof(node_t));
+    assert(tmp != NULL);
+    tmp->value = value;
+    tmp->next = NULL;
+
+    pthread_mutex_lock(&q->tailLock);
+    q->tail->next = tmp;
+    q->tail = tmp;
+    pthread_mutex_unlock(&q->tailLock);
+}
+
+int Queue_Dequeue(queue_t *q, int *value) {
+    pthread_mutex_lock(&q->headLock);
+    node_t *tmp = q->head;
+    node_t *newHead = tmp->next;
+    if (newHead == NULL) {
+        pthread_mutex_unlock(&q->headLock);
+        return -1; // queue was empty
+    }
+    *value = newHead->value;
+    q->head = newHead;
+    pthread_mutex_unlock(&q->headLock);
+
+    free(tmp);
+    return 0;
+}
+```
+- Concurrent Hash Table
+```
+#define BUCKETS (101)
+
+typedef struct __hash_t {
+    list_t lists[BUCKETS];
+} hash_t;
+void Hash_Init(hash_t *H) {
+    int i;
+    for (i = 0; i < BUCKETS; i++)
+        List_Init(&H->lists[i]);
+}
+int Hash_Insert(hash_t *H, int key) {
+    int bucket = key % BUCKETS;
+    return List_Insert(&H->lists[bucket], key);
+}
+int Hash_Lookup(hash_t *H, int key) {
+    int bucket = key % BUCKETS;
+    return List_Lookup(&H->lists[bucket], key);
+}
+```
+
+## Condition Variables
+Condition을 기다리는 방법. 
+- How to wait for a condition?
+  - Spinning은 CPU 낭비.
+  ```
+  volatile int done = 0;
+  void *child(void *arg) {
+      printf("child\n");
+      done = 1;
+      return NULL;
+  }
+  int main(int argc, char *argv[]) {
+      pthread_t c;
+      printf("parent: begin\n");
+      pthread_create(&c, NULL, child, NULL); // create child
+      while (done == 0); // spin
+      printf("parent: end\n");
+      return 0;
+  }
+  ```
+- Condition Variable
+  - Thread가 어떤 상태를 기다리는 데, 상태가 만족되지 않는 시간은 sleep (특정 큐에 들어간다.)
+  - 다른 Thread가 꺠울 수 있다.
+  - ptrhead_cond_wait(queue, mutex)
+    - 어떤 조건이 만족되지 않을때 만족되기까지 기다린다.
+    - 함수내에서 unlock, sleep
+  - pthread_cond_signal()
+    - 이때 다시 lock, wait에선 return
+  - Example
+  ```
+  int done = 0;
+  pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
+  pthread_cond_t c = PTHREAD_COND_INITIALIZER;
+  void *child(void *arg) {
+      printf("child\n");
+      thr_exit();
+      return NULL;
+  }
+  int main(int argc, char *argv[]) {
+      pthread_t p;
+      printf("parent: begin\n");
+      pthread_create(&p, NULL, child, NULL);
+      thr_join();
+      printf("parent: end\n");
+      return 0;
+  }
+  ```
+  ```
+  void thr_exit() {
+      pthread_mutex_lock(&m);
+      done = 1;
+      pthread_cond_signal(&c);
+      pthread_mutex_unlock(&m);
+  }
+  void thr_join() {
+      pthread_mutex_lock(&m);
+      while (done == 0)
+      pthread_cond_wait(&c, &m);
+      pthread_mutex_unlock(&m);
+  }
+  ```
+  - State varibale이 없다면
+  ```
+  void thr_exit() {
+      pthread_mutex_lock(&m);
+      pthread_cond_signal(&c);
+      pthread_mutex_unlock(&m);
+  }
+  void thr_join() {
+      pthread_mutex_lock(&m);
+      pthread_cond_wait(&c, &m);
+      pthread_mutex_unlock(&m);
+  }
+  ```
+    - Wait 하기전에 Signal. 
+    - main threada를 깨울 애가 없어진다.
+    - 따라서 state variable이 필요하다.
+  - Lock이 없다면
+  ```
+  void thr_exit() {
+      done = 1;
+      pthread_cond_signal(&c);
+  }
+  void thr_join() {
+      while (done == 0)
+          pthread_cond_wait(&c);
+  }
+  ```
+    - 마찬가지로 Wait 하기전에 signal.
+### (2)
+- Producer / Consumer Problem
+  - Producer: 데이터 생산 thread
+  - Consumer: 데이터 소비 thread
+  - Example
+    - Pipe
+    - Web server
+  - bounded buffer (큐의 길이가 한정적) 가 shared resouce 니까, 동기화가 필요하다. Condition variable 쓰자.
+- Example
+```
+int buffer; // single buffer
+int count = 0; // initially, empty
+void put(int value) {
+    assert(count == 0);
+    count = 1;
+    buffer = value;
+}
+int get() {
+    assert(count == 1);
+    count = 0;
+    return buffer;
+}
+```
+- Example - if
+  - Producer
+    ```
+    cond_t cond;
+    mutex_t mutex;
+    void *producer(void *arg) {
+        int i;
+        for (i = 0; i < loops; i++) {
+            pthread_mutex_lock(&mutex);
+            if (count == 1)
+                pthread_cond_wait(&cond, &mutex);
+            put(i);
+            pthread_cond_signal(&cond);
+            pthread_mutex_unlock(&mutex);
+        }
+    }
+    ```
+  - Consumer
+    ```
+    void *consumer(void *arg) {
+        int i;
+        for (i = 0; i < loops; i++) {
+            pthread_mutex_lock(&mutex);
+            if (count == 0)
+                pthread_cond_wait(&cond, &mutex);
+            int tmp = get();
+            pthread_cond_signal(&cond);
+            pthread_mutex_unlock(&mutex);
+            printf("%d\n", tmp);
+        }
+    }
+    ```
+![IMAGE](/images/kucse-operating-system/cond-if.png)
+T(c1)이 wait, T(p)가 produce 했는데 T(c2)가 consume.  
+T(c1)이 일어나보니 데이터가 없다 -> error
+
+- Example - while
+  - Producer
+    ```
+    cond_t cond;
+    mutex_t mutex;
+    void *producer(void *arg) {
+        int i;
+        for (i = 0; i < loops; i++) {
+            pthread_mutex_lock(&mutex);
+            while (count == 1)
+                pthread_cond_wait(&cond, &mutex);
+            put(i);
+            pthread_cond_signal(&cond);
+            pthread_mutex_unlock(&mutex);
+        }
+    }
+    ```
+  - Consumer
+    ```
+    void *consumer(void *arg) {
+        int i;
+        for (i = 0; i < loops; i++) {
+            pthread_mutex_lock(&mutex);
+            while (count == 0)
+                pthread_cond_wait(&cond, &mutex);
+            int tmp = get();
+            pthread_cond_signal(&cond);
+            pthread_mutex_unlock(&mutex);
+            printf("%d\n", tmp);
+        }
+    }
+    ```
+![IMAGE](/images/kucse-operating-system/cond-while.png)
+T(c1)이 sleep, T(c2)가 sleep, T(p)가 produce, signal, sleep  
+T(c1)이 comsume 하고 sleep. producer를 꺠우려 했는데 consumer가 깨어났다.  
+T(c2). 일어나보니 data가 없다.  
+같은 condition variable이라는 게 문제.
+
+- Example - while & Two CVs
+  - Producer
+    ```
+    cond_t empty, fill;
+    mutex_t mutex;
+    void *producer(void *arg) {
+        int i;
+        for (i = 0; i < loops; i++) {
+            pthread_mutex_lock(&mutex);
+            while (count == 1)
+                pthread_cond_wait(&empty, &mutex);
+            put(i);
+            pthread_cond_signal(&fill);
+            pthread_mutex_unlock(&mutex);
+        }
+    }
+    ```
+  - Consumer
+    ```
+    void *consumer(void *arg) {
+    int i;
+    for (i = 0; i < loops; i++) {
+        pthread_mutex_lock(&mutex);
+        while (count == 0)
+            pthread_cond_wait(&fill, &mutex);
+        int tmp = get();
+        pthread_cond_signal(&empty);
+        pthread_mutex_unlock(&mutex);
+        printf("%d\n", tmp);
+        }
+    }
+    ```
+### (3)
+![IMAGE](/images/kucse-operating-system/cond-more.png)
+- More concurrency
+```
+int buffer[MAX];
+int fill_ptr = 0;
+int use_ptr = 0;
+int count = 0;
+
+void put(int value) {
+    buffer[fill_ptr] = value;
+    fill_ptr = (fill_ptr + 1) % MAX;
+    count++;
+}
+int get() {
+    int tmp = buffer[use_ptr];
+    use_ptr = (use_ptr + 1) % MAX;
+    count--;
+    return tmp;
+}
+```
+```
+cond_t empty, fill;
+mutex_t mutex;
+void *producer(void *arg) {
+    int i;
+    for (i = 0; i < loops; i++) {
+        pthread_mutex_lock(&mutex);
+        while (count == MAX)
+            pthread_cond_wait(&empty, &mutex);
+        put(i);
+        pthread_cond_signal(&fill);
+        pthread_mutex_unlock(&mutex);
+    }
+}
+```
+```
+void *consumer(void *arg) {
+    int i, tmp;
+    for (i = 0; i < loops; i++) {
+        pthread_mutex_lock(&mutex);
+        while (count == 0)
+            pthread_cond_wait(&fill, &mutex);
+        tmp = get();
+        pthread_cond_signal(&empty);
+        pthread_mutex_unlock(&mutex);
+        printf("%d\n", tmp);
+    }
+}
+```
+- Covering conditions
+  - 모든 thread를 꺠워야 할 수도
+  - pthread_cond_broadcast()
+  - example
+    - Multi-threaded memory allocation library
+
+## Semaphores
+### (1)
+lock과 condition variable 두 목적으로 쓸 수 있다.
+- POSIX
+  - `sem_init(sem_t *s, int pshared, unsigned int value)`
+    - semaphore init
+    - 초기값 value 존재
+    - pshared - 0이면 thread에서 공유, 0이 아니면 process끼리 공유. "shared memory"
+  - sem_wait(sem_t *s)
+    - s 값을 1씩 줄인다.
+    - s가 음수면 프로세스를 큐에 재운다.
+  - sem_post(sem_t *s)
+    - s 값을 1 증가
+    - sleep 된 프로세스가 있다면 꺠운다.
+- Binary semaphore
+```
+sem_t m;
+sem_init(&m, 0, 1);
+sem_wait(&m);
+// critical section here
+sem_post(&m);
+```
+  - condition lock 대체 가능
+![IMAGE](/images/kucse-operating-system/semaphore-binary.png)
+- Semaphores for ordering
+```
+sem_t s;
+void * child(void *arg) {
+    printf("child\n");
+    sem_post(&s);
+    return NULL;
+}
+int main(int argc, char *argv[]) {
+    pthread_t c;
+    sem_init(&s, 0, X); // what should X be?
+    printf("parent: begin\n");
+    pthread_create(&c, NULL, child, NULL);
+    sem_wait(&s);
+    printf("parent: end\n");
+    return 0;
+}
+```
+  - 초기값을 뭐로 하지? lock 대신이면 1.. 0을 줄수도 있다.
+![IMAGE](/images/kucse-operating-system/semaphore-ordering.png)
+### (2)
+- Producer/Consumer Problem
+```
+int buffer[MAX]; // bounded buffer
+int fill = 0;
+int use = 0;
+void put(int value) {
+    buffer[fill] = value;
+    fill = (fill + 1) % MAX;
+}
+int get() {
+    int tmp = buffer[use];
+    use = (use + 1) % MAX;
+    return tmp;
+}
+```
+```
+sem_t empty, sem_t full;
+void *producer(void *arg) {
+    int i;
+    for (i = 0; i < loops; i++) {
+        sem_wait(&empty);
+        put(i);
+        sem_post(&full);
+    }
+}
+
+void *consumer(void *arg) {
+    int i, tmp = 0;
+    while (tmp != -1) {
+        sem_wait(&full);
+        tmp = get();
+        sem_post(&empty);
+        printf("%d\n", tmp);
+    }
+}
+```
+```
+int main(int argc, char *argv[]) {
+    // ...
+    sem_init(&empty, 0, MAX); // MAX are empty
+    sem_init(&full, 0, 0); // 0 are full
+    // ...
+}
+```
+
+- Race condition
+  - Single thread producer / cocnsumer 라면 동작
+  - multi thread의 경우 put(), get() 에서 race condition
+  - producer, consumer를 mutex 로 감싼다.
+    ```
+    void *producer(void *arg) {
+        int i;
+        for (i = 0; i < loops; i++) {
+            sem_wait(&mutex);
+            sem_wait(&empty);
+            put(i);
+            sem_post(&full);
+            sem_post(&mutex);
+        }
+    }
+
+    void *consumer(void *arg) {
+        int i;
+        for (i = 0; i < loops; i++) {
+            sem_wait(&mutex);
+            sem_wait(&full);
+            int tmp = get();
+            sem_post(&empty);
+            sem_post(&mutex);
+        }
+    }
+    ```
+- Deadlock
+  - 2개 이상 thread에서
+  - 테스트케이스보단 production 경험.
+  - 동기화는 설계부터 고려되어야 한다.
+```
+void *producer(void *arg) {
+    int i;
+    for (i = 0; i < loops; i++) {
+        sem_wait(&empty);
+        sem_wait(&mutex);
+        put(i);
+        sem_post(&mutex);
+        sem_post(&full);
+    }
+}
+
+void *consumer(void *arg) {
+    int i;
+    for (i = 0; i < loops; i++) {
+        sem_wait(&full);
+        sem_wait(&mutex);
+        int tmp = get();
+        sem_post(&mutex);
+        sem_post(&empty);
+    }
+}
+```
+
+### (3)
+- Reader-Writer Locks
+  - write 보다 read가 훨씬 많더라.
+  - Reader
+    - rwlock_acquire_readlock()
+    - rwlock_release_readlock()
+  - Writer
+    - rwlock_acquire_writelock()
+    - rwlock_release_writelock()
+```
+typedef struct _rwlock_t {
+    // binary semaphore (basic lock)
+    sem_t lock;
+    // used to allow ONE writer or MANY readers
+    sem_t writelock;
+    // count of readers reading in critical section
+    int readers;
+} rwlock_t;
+void rwlock_init(rwlock_t *rw) {
+    rw->readers = 0;
+    sem_init(&rw->lock, 0, 1);
+    sem_init(&rw->writelock, 0, 1);
+}
+```
+```
+void rwlock_acquire_writelock(rwlock_t *rw) {
+    sem_wait(&rw->writelock);
+}
+void rwlock_release_writelock(rwlock_t *rw) {
+    sem_post(&rw->writelock);
+}
+```
+writer starvation 문제가 있을 수 있다.
+```
+void rwlock_acquire_readlock(rwlock_t *rw) {
+    sem_wait(&rw->lock);
+    rw->readers++;
+    if (rw->readers == 1)
+        // first reader acquires writelock
+        sem_wait(&rw->writelock);
+    sem_post(&rw->lock);
+}
+void rwlock_release_readlock(rwlock_t *rw) {
+    sem_wait(&rw->lock);
+    rw->readers--;
+    if (rw->readers == 0)
+        // last reader releases writelock
+        sem_post(&rw->writelock);
+    sem_post(&rw->lock);
+}
+```
+- How to implement semaphores
+```
+typedef struct __Sem_t {
+    int value;
+    pthread_cond_t cond;
+    pthread_mutex_t lock;
+} Sem_t;
+
+// only one thread can call this
+void Sem_init(Sem_t *s, int value) {
+    s->value = value;
+    Cond_init(&s->cond);
+    Mutex_init(&s->lock);
+}
+```
+```
+void Sem_wait(Sem_t *s) {
+    Mutex_lock(&s->lock);
+    while (s->value <= 0)
+        Cond_wait(&s->cond, &s->lock);
+    s->value--;
+    Mutex_unlock(&s->lock);
+}
+
+void Sem_post(Sem_t *s) {
+    Mutex_lock(&s->lock);
+    s->value++;
+    Cond_signal(&s->cond);
+    Mutex_unlock(&s->lock);
+}
+```
+  - 원래 표준: value를 줄이고 음수면 잠든다. (number: 자고 있는 스레드 수)
+  - 리눅스 구현: value는 0보다 작아질 수 없다.
+    - 더 자세히) Linux는 condition variable이 아닌 futex로 구현.
+
+## Common Concurrency Problems
+### (1)
+- Concurrency Problems
+  - Non-deadlock bus
+    - Atomicity-violation bugs: critical section X
+    - Order-violation bugs: 순서 문제 해결 X
+  - Deadlock bugs
+- Atomicity-Violation Bugs
+  - race condition이 발생하지 않을 것이란 기대. 하지만 atomic이 보장되지 않았다.
+  - Example (MySQL)
+  ```
+  Thread 1:
+  if (thd->proc_info) {
+      ...
+      fputs(thd->proc_info, ...);
+      ...
+  }
+
+  Thread 2:
+  thd->proc_info = NULL;
+    ```
+  - Atomicity-Violation Fixed
+    ```
+    pthread_mutex_t proc_info_lock = PTHREAD_MUTEX_INITIALIZER;
+    Thread 1:
+    pthread_mutex_lock(&proc_info_lock);
+    if (thd->proc_info) {
+    ...
+    fputs(thd->proc_info, ...);
+    ...
+    }
+    pthread_mutex_unlock(&proc_info_lock);
+    Thread 2:
+    pthread_mutex_lock(&proc_info_lock);
+    thd->proc_info = NULL;
+    pthread_mutex_unlock(&proc_info_lock);
+    ```
+- Order-Violation Bugs
+  - A가 항상 B 전에 실행될 것이란 기대
+  - Example
+    ```
+    Thread 1:
+    void init() {
+      ...
+      mThread = PR_CreateThread(mMain, ...);
+      ...
+    }
+    Thread 2:
+    void mMain(...) {
+      ...
+      mState = mThread->State;
+      ...
+    }
+  - Order-Violation Fixed
+    - Thread 1
+    ```
+    pthread_mutex_t mtLock = PTHREAD_MUTEX_INITIALIZER;
+    pthread_cond_t mtCond = PTHREAD_COND_INITIALIZER;
+    int mtInit = 0;
+    
+    void init() {
+        ...
+        mThread = PR_CreateThread(mMain, ...);
+        // signal that the thread has been created...
+        pthread_mutex_lock(&mtLock);
+        mtInit = 1;
+        pthread_cond_signal(&mtCond);
+        pthread_mutex_unlock(&mtLock);
+        ...
+    }
+    ```
+    - Thread 2
+    ```
+    void mMain(...) {
+        ...
+        // wait for the thread to be initialized...
+        pthread_mutex_lock(&mtLock);
+        while (mtInit == 0)
+            pthread_cond_wait(&mtCond, &mtLock);
+        pthread_mutex_unlock(&mtLock);
+        mState = mThread->State;
+        ...
+    }
+    ```
+### (2)
+- Deadlock Bugs
+![IMAGE](/images/kucse-operating-system/deadlock.png)
+  - Circular dependencies. 순환 참조
+  ```
+  Thread 1:
+  pthread_mutex_lock(L1);
+  pthread_mutex_lock(L2);
+
+  Thread 2:
+  pthread_mutex_lock(L2);
+  pthread_mutex_lock(L1);
+  ```
+- Why do deadlocks occur?
+  - 코드가 크니 일일히 찾기 쉽지 않다.
+  - Example (virtual memory system)
+    - VMS -> FS
+    - FS -> VMS
+    - 자주 읽는 데이터는 Intermediate Buffer 안에. (Buffer cache, Page cache) 
+    - Circular request
+  - Nature of encapsulation
+    - Example (Java vector class)
+      ```
+      Vector v1, v2;
+
+      Thread 1:
+      v1.AddAll(v2);
+      Thread 2:
+      v2.AddAll(v1);
+      ``
+      - vector 내에서 lock이 잘 되어 있어도 deadlock이 발생함을 알기 어렵다.
+- Conditions for Deadlocks
+  - Mutual exclusion
+    - race condition을 없애기 위해 만든 lock이지만 그로 인해 deadlock이.
+  - Hold-and-wait
+    - lock을 가진채로 다른 lock을 얻으려 한다.
+  - No preemption
+    - 다른 thread가 갖는 lock을 강제로 뺏어 올 수가 없다.
+  - Circular wait
+    - lock을 기다리는 구조가 circular
+  - 이 네가지가 모두 만족 되었다면 circular
+    - 1가지만 피하면 deadlock을 피할 수 있다.
+- Deadlock prevention
+  - Circular wait
+    - lock acquire 순서가 다르면서 circular
+      ```
+      Thread 1:
+      lock(L1);
+      lock(L2);
+      
+      Thread2:
+      lock(L2);
+      lock(L1);
+      ```
+    - 그렇다면 lock acquire 순서가 모두 같으면 circular wait이 발생하지 않는다.
+    - partial ordering
+  - Hold-and-wait
+    - 모든 lock을 한꺼번에 acquire
+      ```
+      pthread_mutex_lock(prevention); // begin lock acquisition
+      pthread_mutex_lock(L1);
+      pthread_mutex_lock(L2);
+      ...
+      pthread_mutex_unlock(prevention); // end
+      ```
+    - critical section이 커진다.
+    - lock을 모두 알고 있어야 한다.
+    - -> 모든 상황에 적용은 어렵다.
+  - No preemption
+    - 현재 대부분의 운영체젱서 강제로 뺏어 올 수 있는 방법은 없다.
+    - 현실적 solution: trylock
+      ```
+      top:
+      pthread_mutex_lock(L1);
+      if (pthread_mutex_trylock(L2) != 0) {
+          pthread_mutex_unlock(L1);
+          goto top;
+      }
+      ```
+    - 내가 L1, L2 둥다 못가져 온다면 둘다 포기하고 다시 처음부터 acquire.
+    - livelock
+      - 여러 thread가 모든 lock을 acquire 하지 못한 채로 loop
+      - solution: goto 하기 전에 random delay
+      - 주의점: goto 하기 전에 unlock. 자원 획득하기 전에 release 필요.
+  - mutual excclusion
+    - Lock-free approaches. Lock-free 알고리즘을 쓰자.
+      ```
+      void insert(int value) {
+        node_t *n = malloc(sizeof(node_t));
+        assert(n != NULL);
+        n->value = value;
+        pthread_mutex_lock(listlock);
+        n->next = head;
+        head = n;
+        pthread_mutex_unlock(listlock);
+      }
+      ```
+    - CompareAndSwap과 같은 atomic instruction을 쓸 수 있겠다.
+      ```
+      void insert(int value) {
+          node_t *n = malloc(sizeof(node_t));
+          assert(n != NULL);
+          n->value = value;
+          do {
+              n->next = head;
+          } while (CompareAndSwap(&head, n->next, n) == 0);
+      }
+      ```
+    - CPU 자원 낭비 가능성, thread가 많아지면 효율이 구려진다.
+- Deadlock Avoidance
+  - 쉽지 않다.
+![IMAGE](/images/kucse-operating-system/deadlock-avoid.png)
+  - 여기저기 쓸 수 있는 방법은 아니다.
+- Detect and recover
+  - deadlock이 발생했을때 detect and recover?
+  - 어려운 기술. trace가 가능한가?
+  - 무엇을 recove? checkpoint??
+  - **Restart !!**
+
+
+- QnA
+  - 리눅스를 분석해보고 싶은데요.... 익숙한 System call의 커널 entry point를 시작으로 내부 구현 코드를 추적해보자
+  - 운영체제를 구현해보고 싶은데요.... RTOS 구현 from scratch.
