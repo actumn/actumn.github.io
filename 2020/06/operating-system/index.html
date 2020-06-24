@@ -1,0 +1,998 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=generator content="Hugo 0.62.2 with theme Tranquilpeak 0.4.7-BETA"><meta name=author content="SunMyeong Lee"><meta name=keywords content="tech"><meta name=description content="건국대학교 운영체제 강의노트
+http://pages.cs.wisc.edu/~remzi/OSTEP/#book-chapters"><meta property="og:description" content="건국대학교 운영체제 강의노트
+http://pages.cs.wisc.edu/~remzi/OSTEP/#book-chapters"><meta property="og:type" content="article"><meta property="og:title" content="Operating System"><meta name=twitter:title content="Operating System"><meta property="og:url" content="https://actumn.github.io/2020/06/operating-system/"><meta property="twitter:url" content="https://actumn.github.io/2020/06/operating-system/"><meta property="og:site_name" content="Actumn (SunMyeong Lee)"><meta property="og:description" content="건국대학교 운영체제 강의노트
+http://pages.cs.wisc.edu/~remzi/OSTEP/#book-chapters"><meta name=twitter:description content="건국대학교 운영체제 강의노트
+http://pages.cs.wisc.edu/~remzi/OSTEP/#book-chapters"><meta property="og:locale" content="ko-kr"><meta property="article:published_time" content="2020-06-23T01:22:15"><meta property="article:modified_time" content="2020-06-23T01:22:15"><meta property="article:section" content="Computer Science"><meta property="article:tag" content="lecture"><meta property="article:tag" content="computer science"><meta property="article:tag" content="computer network"><meta name=twitter:card content="summary"><meta property="og:image" content="https://www.gravatar.com/avatar/8c162af52bd6a1258c11ddf087e2af65?s=640"><meta property="twitter:image" content="https://www.gravatar.com/avatar/8c162af52bd6a1258c11ddf087e2af65?s=640"><title>Operating System</title><link rel=icon href=https://actumn.github.io/favicon.png><link rel=canonical href=https://actumn.github.io/2020/06/operating-system/><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin=anonymous><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.4/jquery.fancybox.min.css integrity="sha256-vuXZ9LGmmwtjqFX1F+EKin1ThZMub58gKULUyf0qECk=" crossorigin=anonymous><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.4/helpers/jquery.fancybox-thumbs.min.css integrity="sha256-SEa4XYAHihTcEP1f5gARTB2K26Uk8PsndQYHQC1f4jU=" crossorigin=anonymous><link rel=stylesheet href=https://actumn.github.io/css/style-twzjdbqhmnnacqs0pwwdzcdbt8yhv8giawvjqjmyfoqnvazl0dalmnhdkvp7.min.css></head><body><div id=blog><header id=header data-behavior=1><i id=btn-open-sidebar class="fa fa-lg fa-bars"></i><div class=header-title><a class=header-title-link href=https://actumn.github.io/>Actumn (SunMyeong Lee)</a></div><a class=header-right-picture href=https://actumn.github.io/#about><img class=header-picture src="https://www.gravatar.com/avatar/8c162af52bd6a1258c11ddf087e2af65?s=90" alt></a></header><nav id=sidebar data-behavior=1><div class=sidebar-container><div class=sidebar-profile><a href=https://actumn.github.io/#about><img class=sidebar-profile-picture src="https://www.gravatar.com/avatar/8c162af52bd6a1258c11ddf087e2af65?s=110" alt></a><h4 class=sidebar-profile-name>SunMyeong Lee</h4><h5 class=sidebar-profile-bio>I love <em>language learning</em>, <em>development</em>, <em>open source</em></h5></div><ul class=sidebar-buttons><li class=sidebar-button><a class=sidebar-button-link href=https://actumn.github.io/><i class="sidebar-button-icon fa fa-lg fa-home"></i><span class=sidebar-button-desc>Home</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://actumn.github.io/categories><i class="sidebar-button-icon fa fa-lg fa-bookmark"></i><span class=sidebar-button-desc>Categories</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://actumn.github.io/tags><i class="sidebar-button-icon fa fa-lg fa-tags"></i><span class=sidebar-button-desc>Tags</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://actumn.github.io/archives><i class="sidebar-button-icon fa fa-lg fa-archive"></i><span class=sidebar-button-desc>Archives</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://actumn.github.io/#about><i class="sidebar-button-icon fa fa-lg fa-question"></i><span class=sidebar-button-desc>About</span></a></li></ul><ul class=sidebar-buttons><li class=sidebar-button><a class=sidebar-button-link href=https://github.com/actumn target=_blank rel=noopener><i class="sidebar-button-icon fa fa-lg fa-github"></i><span class=sidebar-button-desc>GitHub</span></a></li></ul><ul class=sidebar-buttons></ul></div></nav><div id=main data-behavior=1 class=hasCoverMetaIn><article class=post itemscope itemtype=http://schema.org/BlogPosting><div class="post-header main-content-wrap text-left"><h1 class=post-title itemprop=headline>Operating System</h1><div class="postShorten-meta post-meta"><time itemprop=datePublished datetime=2020-06-23T01:22:15+09:00>23, 2020</time>
+<span></span><a class=category-link href=https://actumn.github.io/categories/computer-science>Computer Science</a></div></div><div class="post-content markdown" itemprop=articleBody><div class=main-content-wrap><p>건국대학교 운영체제 강의노트<br><a href=http://pages.cs.wisc.edu/~remzi/OSTEP/#book-chapters>http://pages.cs.wisc.edu/~remzi/OSTEP/#book-chapters</a></p><h1 id=cpu-virtualization>CPU virtualization</h1><h2 id=process>Process</h2><h3 id=1>(1)</h3><ul><li>Program vs Process<ul><li>Program<ul><li>Executable 파일</li><li>instructios, static data</li></ul></li><li>Process<ul><li>실행되고 있는 프로그램</li><li>Machine stae<ul><li>Memory: instruction and data</li><li>Register: PC, stack pointer, &mldr;</li><li>Others: 프로세스가 open한 파일 리스트. (우리가 file을 close하지 않아도, 프로세스가 종료할 때 운영체제가 알아서 close 해준다.)</li></ul></li></ul></li></ul></li><li>API<ul><li>create, destory, wait, miscellaneous control</li><li>fork()<ul><li>parent, child</li><li>실행되는 순서가 다를 수 있다: OS process schedulling policy</li><li>따라서 순서를 예측할 수 없다.</li></ul></li><li>wait()<ul><li>child가 하나라도 종료되는 걸 기다림.</li></ul></li><li>waitpid()<ul><li>특정 child 프로세스가 종료되는 걸 기다림.</li></ul></li><li>exec()<ul><li>기존에 있던 프로세스를 덮어쓴다.</li><li>일반적으로 fork()하고 child에서 exec</li></ul></li></ul></li><li>프로세스가 여러개 -> 컨텍스트 스위칭<ul><li>동시자원 접근</li><li>timer, I/O request등 인터럽트가 일어나면 컨텍스트 스위칭 (그리고 OS에서 어떤 작업을 수행한다.)</li></ul></li><li>코어는 한정적. 많은 프로세스를 어떻게 효율적으로 처리할 것인가?<ul><li>Ideal: 동시에 처리</li><li>Reality: 프로세스가 CPU 선점, 자원 독차지</li><li>운영체제는 application 개발자에게 어떻게 Ideal하게 제공할 수 있을지 고민한다.</li></ul></li><li>Time sharing<ul><li>많은 가상 CPU가 존재한다고 생각. (실제 CPU는 몇몇개 정도로 한정적)</li><li>원하는 만큼 동시에 (councurrent) 프로세스 실행</li><li>비용<ul><li>CPU가 공유된다.</li><li>이는 효율적인가? (Context switching overhead)</li></ul></li><li>컨텍스트 스위치
+<img src=https://actumn.github.io/images/kucse-operating-system/process-timesharing.png alt=IMAGE></li></ul></li></ul><h3 id=2>(2)</h3><ul><li>Process State
+<img src=https://actumn.github.io/images/kucse-operating-system/process-states.png alt=IMAGE><ul><li>Running: 프로세서에서 돌고 있다.</li><li>Ready: 준비되어 있다. CPU가 아직 안꺼내갔다.</li><li>Blocked (Waiting): not ready.<ul><li>Disk I/O, Network I/O 는 CPU보다 굉장히 느리다.</li><li>여기서 데이터가 올때까지 기다린다 -> Process Block</li></ul></li><li>example
+<img src=https://actumn.github.io/images/kucse-operating-system/process-states-ex.png alt=IMAGE></li><li>data strutures: <code>/include/linux/sched.h</code></li></ul></li></ul><pre><code>struct task_struct {
+#ifdef CONFIG_THREAD_INFO_IN_TASK
+	/*
+	 * For reasons of header soup (see current_thread_info()), this
+	 * must be the first element of task_struct.
+	 */
+	struct thread_info		thread_info;
+#endif
+	/* -1 unrunnable, 0 runnable, &gt;0 stopped: */
+	volatile long			state;
+
+	/*
+	 * This begins the randomizable portion of task_struct. Only
+	 * scheduling-critical items should be added above here.
+	 */
+	randomized_struct_fields_start
+
+	void				*stack;
+#ifdef CONFIG_THREAD_INFO_IN_TASK
+	/* Current CPU: */
+	unsigned int			cpu;
+#endif
+	struct mm_struct		*mm;
+	struct mm_struct		*active_mm;
+
+	/*
+	 * Pointers to the (original) parent process, youngest child, younger sibling,
+	 * older sibling, respectively.  (p-&gt;father can be replaced with
+	 * p-&gt;real_parent-&gt;pid)
+	 */
+
+	/* Real parent process: */
+	struct task_struct __rcu	*real_parent;
+
+	/* Recipient of SIGCHLD, wait4() reports: */
+	struct task_struct __rcu	*parent;
+
+	/*
+	 * Children/sibling form the list of natural children:
+	 */
+	struct list_head		children;
+
+	/* Filesystem information: */
+	struct fs_struct		*fs;
+
+	/* Open file information: */
+	struct files_struct		*files;
+}
+</code></pre><ul><li>Scheduling queue<ul><li>Run queue</li><li>Ready queue</li><li>Waiting queue</li><li>운영체제 입장에서 어떤 process가 어떤 state에 있는지 빨리 찾아야할 필요가 있다.<ul><li>ex) 한 프로세스가 너무 길게 run -> (run &lt;&ndash;> Ready)</li></ul></li></ul></li></ul><h2 id=limited-direct-execution>Limited Direct Execution</h2><p>프로세스에게 CPU 자원을 주고, &ldquo;하고 싶은 대로 다 해봐라&rdquo;</p><table><thead><tr><th>OS</th><th>Program</th></tr></thead><tbody><tr><td>Create entry for process list</td><td></td></tr><tr><td>Allocate memory for program</td><td></td></tr><tr><td>Load program into memory</td><td></td></tr><tr><td>Set up stack with argc/argv</td><td></td></tr><tr><td>Clear registers</td><td></td></tr><tr><td>Execute call main()</td><td></td></tr><tr><td></td><td>Run main()</td></tr><tr><td></td><td>Execute return from main()</td></tr><tr><td>Free memory of process</td><td></td></tr><tr><td>Remove from process list</td><td></td></tr></tbody></table><p>프로그램이 돌아가는 중에 OS는 컨트롤 할 여지가 없다?<br>OS도 결국은 실행코드 집합. CPU 자원이 있어야한다.</p><ul><li>프로그램이 CPU를 갖고 있으므로<ul><li>감시도 못하고</li><li>Time sharing / Process policy / Context switch 하기 어렵다.</li></ul></li></ul><h3 id=problem-1-restricted-operations-previleged-opeartions>Problem 1: Restricted Operations (Previleged opeartions)</h3><ul><li>How to perform restricted operations?<ul><li>Restricted operations (previleged operations)<ul><li>Issuing an <strong>I/O request</strong> to a disk</li><li><strong>Gaining access</strong> to more system resources</li><li>CPU, memory 등 시스템 자원은 항상 모자란 자원. 유저 프로세스가 요청한 대로 다 제공 불가.</li><li>요청에 대해 얼만큼 허락할 것인지.</li></ul></li><li>Application은 제한된 operation을.<ul><li>다만 프로세스에게 완전한 제어권은 X</li></ul></li></ul></li><li>Processor modes: CPU가 제공하는 기능. Intel은 4가지 모드 제공, 운영체제는 User, Kernel 쓴다.<ul><li>User mode: Restricted operation 사용 불가.<ul><li>유저 모드 코드는 할 수 있는게 제한된다.</li><li>제한된 operation은 프로세서 exception을 일으킨다.</li></ul></li><li>Kernel model<ul><li>코드가 뭐든지 할 수 있다.</li><li>OS는 커널모드로 동작.</li></ul></li></ul></li><li>System call<ul><li>Restricted opeartion은 유저모드에선 불가. 하지만 필요하다 -> 시스템 콜.</li><li>Trap instruction<ul><li>커널 진입 (시스템 콜 호출시)</li><li>previleged level을 kernel 모드로.</li><li>previleged operation 수행</li></ul></li><li>Return-from-trap instruction<ul><li>시스템 콜이 끝나고 호출되는 instruction</li><li>커널 모드 -> 유저 모드</li><li>previleged level을 kernel 모드에서 다시 user mode로</li></ul></li><li>유저 프로세스는 Retricted opeartion을 쓰기 위해 시스템 콜을 호출해야 한다.</li><li>Trap -> (instruction) -> Return-from-trap</li></ul></li><li>Restricted Operation을 맘대로 못쓰게 하기 위해 프로세서 모드.<ul><li>우리는 그냥 시스템 콜을 부르면 쉽게 커널 모드 진입. 허락되지 않은 일도 맘대로 할 수 있지 않을까.</li><li>=> 시스템 콜을 호출한 프로세스는 jump할 address를 지정할 수 없다.<ul><li>정해져 있는 시스템 콜을 호출하게 되어 있다.</li><li>제공되는 Restricted operation이 대단히 제한적이다.</li></ul></li><li>Trap Table<ul><li>Trap instruction이 호출되었을 때 실행될 코드들, 즉 trap handler가 저장된 table</li><li>시스템 콜 number</li><li>Trap instruction을 해도 특정 address 접근이 아니라, 미리 정해져 있는 number만 요청</li><li>운영체제가 미리 정의해 놓은 hadnler만 호출 => 운영체제 검사 => 통과, OS 코드 실행<ul><li>여러 권한 검사</li><li>이 프로세스가 이 코드를 실행해도 되는가</li><li>이 trap number로 특정 호출을 해도 되는지.
+<img src=https://actumn.github.io/images/kucse-operating-system/exec-trap-table.png alt=IMAGE></li></ul></li></ul></li></ul></li></ul><table><thead><tr><th>OS</th><th>Hardware</th><th>Program</th></tr></thead><tbody><tr><td>Initialize trap table</td><td></td><td></td></tr><tr><td></td><td>Remember address of syscall handler</td><td></td></tr><tr><td>Create entry for process list</td><td></td><td></td></tr><tr><td>Allocate memory for program</td><td></td><td></td></tr><tr><td>Load program into memory</td><td></td><td></td></tr><tr><td>Set up user stack with argc/argv</td><td></td><td></td></tr><tr><td>Fill kernel stack with regs/PC</td><td></td><td></td></tr><tr><td><strong>Return-from-trap</strong></td><td></td><td></td></tr><tr><td></td><td>Restore regs from kernel stack</td><td></td></tr><tr><td></td><td><strong>Move to user mode</strong></td><td></td></tr><tr><td></td><td>Jump to main</td><td></td></tr><tr><td></td><td></td><td>Run main()</td></tr><tr><td></td><td></td><td>&mldr;</td></tr><tr><td></td><td></td><td>Call system call</td></tr><tr><td></td><td></td><td><strong>Trap</strong> into OS</td></tr><tr><td></td><td>Save regs/PC to kernel stack</td><td></td></tr><tr><td></td><td>Move to kernel mode</td><td></td></tr><tr><td></td><td>Jump to trap handler</td><td></td></tr><tr><td>Handle trap</td><td></td><td></td></tr><tr><td><strong>Return-from-trap</strong></td><td></td><td></td></tr><tr><td></td><td>Restore regs from kernel stack</td><td></td></tr><tr><td></td><td><strong>Move to user mode</strong></td><td></td></tr><tr><td></td><td>Jump to PC after trap</td><td></td></tr><tr><td></td><td></td><td>Return from main()</td></tr><tr><td></td><td></td><td><strong>Trap</strong> (via exit())</td></tr><tr><td>Free memory of process</td><td></td><td></td></tr><tr><td>Remove from process list</td><td></td><td></td></tr></tbody></table><h3 id=problem-2-switching-between-processes>Problem 2: Switching Between Processes</h3><ul><li>How to regain control of the CPU?<ul><li>CPU에서 프로세스가 돌고 있다면, OS는 돌고 있지 않다.</li><li>OS가 돌고 있는게 아니라면, 이걸 어떻게 하지? (System call, Context Switching)</li></ul></li><li>Cooperative Approach: Wait for system calls<ul><li>오래 실행되는 프로세스는 &ldquo;주기적으로 CPU를 포기할 것"으로 추정<ul><li>대부분의 프로세스는 CPU 제어권을 OS에게 꽤나 빈번히 넘긴다.</li><li>시스템 콜 내부에 스케쥴링 코드 => time sharing</li></ul></li><li>illegal operation 할 때도 제어권을 넘긴다<ul><li>Dividing by zero</li><li>Segmentation fault</li><li>응용 프로그램에서 시스템콜을 부르지 않는다면?</li></ul></li><li>운영체제 개발자는 Application 개발자를 믿지 않는다.</li></ul></li><li>Non-Cooperative Approach: The OS takes control<ul><li>Timer interrupt<ul><li>CPU에서 소프트웨어적으로 프로그래밍 가능한 timer를 제공.</li><li>timer device는 주기적으로(1ms?) interrupt를 발생시킨다.</li><li>인터럽트 발생시 현재 프로세스는 머추고 사전에 설정된 인터럽트 핸들러가 동작한다.</li></ul></li></ul></li><li>Context Switch<ul><li>Saving and restoring context<ul><li>몇몇 레지스터 값 저장</li><li>곧 실행될 프로세스 값 restore (kernel stack에서 꺼내서, kernel stack => 실행 프로세스)</li><li>Return-from-trap instruction이 실해되면 system은 또 다른 프로세스 실행 재개.</li></ul></li></ul></li></ul><h3 id=3>(3)</h3><table><thead><tr><th>OS</th><th>Hardware</th><th>Program</th></tr></thead><tbody><tr><td>Initialize trap table</td><td></td><td></td></tr><tr><td></td><td>Remember address of syscall handler</td><td></td></tr><tr><td></td><td>Remember address of timer handler</td><td></td></tr><tr><td><strong>Start interrupt timer</strong></td><td></td><td></td></tr><tr><td></td><td>Start timer(interrupt CPU in X ms )</td><td></td></tr><tr><td></td><td></td><td>Process A</td></tr><tr><td></td><td><strong>Timer interrupt</strong></td><td></td></tr><tr><td></td><td>Save regs(A) to k-stack(A)</td><td></td></tr><tr><td></td><td>Move to kernel mode</td><td></td></tr><tr><td></td><td>Jump to trap handler</td><td></td></tr><tr><td>Handle the trap</td><td></td><td></td></tr><tr><td>Call switch() routine</td><td></td><td></td></tr><tr><td>save regs(A) to k-stack(A)*</td><td></td><td></td></tr><tr><td>restore regs(B) from k-stack(B)*</td><td></td><td></td></tr><tr><td>switch to k-stack(B)</td><td></td><td></td></tr><tr><td>Return-from-trap (into B)</td><td></td><td></td></tr><tr><td></td><td>Restore regs(B) from k-stack(B)</td><td></td></tr><tr><td></td><td>Move to user mode</td><td></td></tr><tr><td></td><td>Jump to B’s PC</td><td></td></tr><tr><td></td><td></td><td>Process B</td></tr><tr><td></td><td></td><td></td></tr></tbody></table><h2 id=cpu-scheduling>CPU Scheduling</h2><h3 id=1-1>(1)</h3><ul><li>Workload Assumptions (Workload 가정)<ul><li>Each jobs (thread/process) runs for the same amount of time</li><li>All job, arrive(실행할 수 있는 상태) at the smae time (ready queue 진입)</li><li>일단 시작하면, 각 job은 자원을 양보하지 않는다.</li><li>모든 job은 CPU만 사용. (I/O 가 없다. CPU를 양보하지 앟는다.)</li><li>각 job의 run-tim을 알고 있다.</li><li>다 비현실적 가정.. 이러한 가정에서 출발해서 조금씩 스케쥴링을 개선한다.</li></ul></li><li>Scheduling Metrics
+$$ T_{turnaround} = T_{completion} - T_{arrival} $$<ul><li>생선된 시간부터 종료된 시간까지 얼마나 걸렸는가.</li><li>CPU 스케쥴링 평가 지표</li></ul></li><li>FIFO (First In, First Out): First come, First served (FCFS)
+<img src=https://actumn.github.io/images/kucse-operating-system/scheduling-fifo.png alt=IMAGE><ul><li>간단하고 쉽다.</li><li>Average turnaround time: $$(10+20+30)/3 = 20$4</li><li>실행시간이 같다는 가정을 지워보자.
+<img src=https://actumn.github.io/images/kucse-operating-system/scheduling-fifo-problem.png alt=IMAGE><ul><li>Average turnaround time: $$(100+110+120)/3 = 110$$</li><li>오래걸리는 process가 앞에 있을 때 비횽ㄹ적.</li><li>전체 성능이 안좋아진다: Convoy effect</li></ul></li></ul></li><li>SJF (Shortest Job First)
+<img src=https://actumn.github.io/images/kucse-operating-system/scheduling-sjf.png alt=IMAGE><ul><li>실행시간이 빠른 애들부터 먼저 하자.</li><li>Average turnaround time: $$(10 + 20 + 120) / 3 = 50$$</li><li>모든 job이 동시에 올 때 최적</li><li>동시에 도착한다는 가정을 지워보자.
+<img src=https://actumn.github.io/images/kucse-operating-system/scheduling-sjf-problem.png alt=IMAGE><ul><li>Average turnaround time: $$(100 + (110 -10) + (120 - 10) / 3 = 103.33$$</li><li>SJF에서도 Convoy effect 발생</li></ul></li></ul></li></ul><h3 id=2-1>(2)</h3><ul><li><p>Preemptive Scheduler</p><ul><li>Non-preemptive scheduler<ul><li>일단 프로세스가 시작하면 다음 스케쥴링은 프로세스가 끝난 뒤 도착</li><li>현재보다는 과거에 했었던 방법. 계산 위주의 job.<ul><li>한번 실행이 되면 runtime state를 모른다.</li><li>실행이 끝날 때 까지 wait => batched job</li></ul></li></ul></li><li>Preemptive scheduler<ul><li>어떤 프로세스가 선점하던 자원을 뺏어서 다른 프로세스에게 줄 수 있다.</li><li>실행하던 프로세스를 멈추고, CPU 자원을 다른 프로세스에게 줘서 다른 프로세스가 실행하도록 자원을 선점하게 하는 scheduler</li><li>Context switch</li><li>현재 운영체제 대부분 preemptive scheduler</li></ul></li></ul></li><li><p>STCF (Shortest Time-to-Completion First): Preemptive Shortest Job First (PSJF)
+<img src=https://actumn.github.io/images/kucse-operating-system/scheduling-stcf.png alt=IMAGE></p><ul><li>Average turnaround time: $$ 120 + (20-10) + (30-10) / 3 = 50 $$</li></ul></li><li><p>Scheduling Metrics</p><ul><li>Turnaround time</li><li>Response time: job이 도착한 시점부터 running state까지 간 시간. $$ T_{response} = T_{firstrun} - T_{arrival} $$</li><li>PSJF에서 average response time은 3.33
+<img src=https://actumn.github.io/images/kucse-operating-system/scheduling-stcf-problem.png alt=IMAGE><ul><li>turnaround time은 괜찮은데, response time과 interactivity가 별로다.</li></ul></li></ul></li><li><p>RR (Round-Robin)
+<img src=https://actumn.github.io/images/kucse-operating-system/scheduling-rr.png alt=IMAGE></p><ul><li>= Time slicing</li><li>스케쥴링이 Time slice가 끝날때마다. (STCF는 프로세스가 새로 도착 / 혹은 종료될 때 뿐)</li><li>Time slice: 2라 했을때<ul><li>Response time = $ (0 + 2 + 4) / 3 = 2$, turnaround time이 조금 구리다.</li></ul></li><li>실행시간이 아무리 길어져도 response time은 동일.</li><li>rseponse time vs turnaround time trade-off. slice가 짧으면 컨텍스트 스위치 overhead</li><li>어떤 종류의 application을 돌리지에 따라 다르다.</li><li>현재 스케쥴러는 모두 RR기반.</li><li>보통 사용자 device와 interactive 케이스가 많다. 일반적으로 RR이 성능이 좋다.</li><li>운영체제마다 time slice가 상수이기도, 동적으로 바꾸기도 한다.</li></ul></li><li><p>프로세스가 CPU만 사용한다는 가정을 지워보자.
+<img src=https://actumn.github.io/images/kucse-operating-system/scheduling-IO.png alt=IMAGE></p><ul><li>프로스세스가 blocked.</li><li>디스크는 CPU에 비해 굉장히 느리다.</li><li>인터럽트 - 시스템 콜.</li><li>놀 수 있는 CPU 자원을 다른 프로세스에게 양보.</li></ul></li><li><p>마지막으로 실제 실행시간을 알고 있다는 가정을 지워보자.</p><ul><li>SJFT, STCF와 같은 접근은 불가능하다.</li><li>남는건 FIFO, RR</li><li>선택지는 RR밖에 남지 않는다.<ul><li>현실적으로 타협가능한 알고리즘.</li></ul></li></ul></li></ul><h2 id=multi-level-feedback-queue>Multi-level Feedback Queue</h2><h3 id=1-2>(1)</h3><ul><li>Crux of the Problem<ul><li>아래 두개를 만족하는 스케쥴러는 어떻게 설계할까<ul><li>interactive job에 최소한의 response time</li><li>turnaround time 최소화</li></ul></li><li>실행시간을 우리는 모른다.</li></ul></li><li>Multi-level Feedback Queue (MLFQ): Multiple queues<ul><li>각자 다른 priority level</li><li>한 순간에 한 job은 해당하는 한 priority level queue에 들어있다.
+<img src=https://actumn.github.io/images/kucse-operating-system/mlfq-example.png alt=IMAGE></li><li>Basic rules<ul><li>Rule 1: Priority(A) > Priority(B): A runs</li><li>Rule 2: Priority(A) = Priority(B): A & B run in RR</li></ul></li><li>위 그림에선 A, B가 다 끝나거나, I/O Blocked가 되야 C, D가 실행될 수 있겠다.</li></ul></li><li>어떻게 priority를 주지?<ul><li>Fixed priority to each job (사용자 명시)<ul><li>자기꺼가 가장 높은 우선순위 하겠지.</li><li>모든 프로세스가 가장 높은 우선순위 큐에만???</li><li>OS는 application 개발자를 믿지 않는다.</li></ul></li><li>동적으로 바꾼다 : 최근에 어떤 행동을 했는지 보고 이후 행동을 예측<ul><li>job이 CPU를 양보 (I/O blocked) -> 높은 우선순위, CPU를 오래 쓰지 않으니까.</li><li>job이 CPU를 오랜시간 점유 => MLFQ는 우선순위를 내린다.</li></ul></li></ul></li><li>How to Change Priority<ul><li><p>Workload</p><ul><li>I/O-bound jobs<ul><li>Interactive, and short-running: 사용자 입력, I/O data send/recv</li></ul></li><li>CPU-bound jobs<ul><li>계산 집중적.</li></ul></li></ul></li><li><p>Priority adjustment algorithm</p><ul><li>Rule3<ul><li>job이 시스템에 들어오면, 높은 priority</li></ul></li><li>Rule4<ul><li>a: time slice를 줄 때 마다 CPU를 소진하면. 낮은 priority</li><li>b: time slice가 끝나기 전에 CPU 자원을 양보한다 => priority 유지</li></ul></li></ul></li></ul></li></ul><h3 id=2-2>(2)</h3><ul><li>Problems<ul><li>Starvation: I/O bound job이 많으면? Interactive job이 많으면?<ul><li>모든 time slice를 I/O bound job이 갖는다. CPU bound job은 얻지 못한다.</li></ul></li><li>Gaming the scheduler: timer slice가 끝나기 전에 I/O 요청하면?</li><li>Changing behavior: CPU bound -> I/O bound</li></ul></li><li>Priority Boost<ul><li>주기적으로 시스템의 모든 job의 priority를 높은 쪽으로<ul><li>Rule5: S만큼 시간이 지난 후 모든 job을 다시 가장 높은 queue로</li><li>starvation과 changing-behavior를 해결 할 수 있다.</li></ul></li></ul></li><li>Starvation 문제
+<img src=https://actumn.github.io/images/kucse-operating-system/mlfq-starvation.png alt=IMAGE><ul><li>Priority boost로 해결
+<img src=https://actumn.github.io/images/kucse-operating-system/mlfq-starvation-solve.png alt=IMAGE></li></ul></li><li>Gaming the scheduler 문제
+<img src=https://actumn.github.io/images/kucse-operating-system/mlfq-gaming.png alt=IMAGE><ul><li>Rule 4를 재정의하자.<ul><li>누적된 CPU 사용량이 time slice만큼 되는가?</li><li>누적된 사용량이 time slice만큼 된다면 priority를 낮추자
+<img src=https://actumn.github.io/images/kucse-operating-system/mlfq-gaming-solve.png alt=IMAGE></li></ul></li></ul></li><li>Changing bevaior 문제<ul><li>Priority boost<ul><li>우선순위가 높은 큐에 머무를 기회가 많아진다.</li></ul></li></ul></li></ul><h2 id=multiprocessor>Multiprocessor</h2><h3 id=1-3>(1)</h3><p><img src=https://actumn.github.io/images/kucse-operating-system/multiprocessor.png alt=IMAGE></p><ul><li>SMP (Sementric Multi processing)<ul><li>System Bus, Memory Bus에 트래픽이 많아진다.</li><li>코어가 많아지고, 프로세스와 쓰레드가 많아지므로</li></ul></li><li>NUMA<ul><li>CPU 패키지마다 다른 메모리 액세스<ul><li>laptop, desktop은 보통 CPU 패키지 1개임 ..</li></ul></li><li>다른 CPU 패키지에서 쓰는 메모리를 접근할 수 있다.<ul><li>malloc 같은 api는 운영체제가 어느 cpu에 할지 결정.</li></ul></li><li>cache는 원본의 복사본.<ul><li>consistency 문제가 있을 수 있으니 해당 프로토콜이 존재한다. (MESI)</li></ul></li></ul></li><li>Single-Queue scheduling: Single-queue multiprocessor scheduling (SQMS)
+<img src=https://actumn.github.io/images/kucse-operating-system/multiprocessor-sqms.png alt=IMAGE><ul><li>CPU 가 여러개여도 Ready Queue는 1개.<ul><li>지금까지의 CPU 스케쥴링은 그대로 쓸 수 있다.</li></ul></li><li>n개의 job을 꺼내올 수 있다. (n = CPUs)</li><li>A가 0->1->2->3 &mldr; Cache affinity(캐시 친화도)가 구리다.</li><li>(CPU마다 클락이 다르다 등의 이유로) time slice가 다를 수 있다. (끝나는 시점이 다를 수 있다.)<ul><li>queue에 접근할 때 동기화 필요.</li><li>critical section이 생기므로 공유되는 메모리 영역, sequential 할 수 밖에 없다.</li><li>scalability가 구려진다.</li></ul></li><li>Queue 하나가 간단할 수 있지만 여러 단점들이 존재한다.</li></ul></li><li>Multi-Queue Scheduling: Multi-queue multiprocessor scheduling (MQMS)
+<img src=https://actumn.github.io/images/kucse-operating-system/multiprocessor-mqms.png alt=IMAGE><ul><li>CPU마다 Ready queue를 따로 두자.</li><li>job이 시스템에 arrive 할때, 하나의 queue에만 존재하자.<ul><li>어떤 큐에 둘것인가? random, shorter queue, &mldr;</li></ul></li><li>독립적으로 Ready queue에 접근, 스케쥴링</li><li>하나의 큐 - 하나의 CPU. 따라서 동기화가 필요 없다.<ul><li>1 job은 계속 같은 CPU에서 돈다. locality도 좋다.</li></ul></li><li>Load imbalance 문제
+<img src=https://actumn.github.io/images/kucse-operating-system/multiprocessor-mqms-problem.png alt=IMAGE><ul><li>어떻게 하지?<ul><li>Migration : job 을 다른 큐로 옮기자. 누가? 언제?</li><li>Work stealing<ul><li>CPU가 한가해지면 다른 큐에서 job을 가져온다. 밸런스를 맞춰보자.
+<img src=https://actumn.github.io/images/kucse-operating-system/multiprocessor-mqms-steal.png alt=IMAGE></li><li>일반적으로 메모리 bound가 적은 놈을 가져온다.</li></ul></li></ul></li></ul></li></ul></li></ul><h3 id=2-3>(2)</h3><ul><li>Linux CPU schedulers<ul><li>Completely Fair Scheduler (CFS)
+<img src=https://actumn.github.io/images/kucse-operating-system/multiprocessor-cfs.png alt=IMAGE><ul><li>Red-Black tree</li><li>default (SCHED_NORMAL)</li><li>weighted fair scheduling</li><li>프로세스가 얼마나 CPU를 점유하고 이ㅣㅆ었는지,</li><li>가장 적게 점유한 애가 최하단 왼쪽, 얘를 우선으로 하려고 노력한다.</li></ul></li><li>Real-Time Scheduler
+<img src=https://actumn.github.io/images/kucse-operating-system/multiprocessor-rts.png alt=IMAGE><ul><li>Multilevel Feedback Queue와 유사.</li><li>SCHED_FIFO, SCHED_RR</li><li>Priority-based scheduling<ul><li>priority가 고정되어 있다. (동적으로 변하지 않음). 우선순위 조정 필요</li></ul></li><li>sched_setattr</li></ul></li><li>Deadline Scheduler
+<img src=https://actumn.github.io/images/kucse-operating-system/multiprocessor-deadlinescheduler.png alt=IMAGE><ul><li>SCHED_DEADLINE</li><li>EOF(Earliest Deadline First)-like scheduler</li><li>Deadline이 제일 급한 애부터 실행시켜라</li><li>Period(주기)마다 실행하는데, 정해진 Execution time 만큼 실행한다.</li><li>sched_setattr</li></ul></li></ul></li><li>Completely Fair Scheduler (CFS)<ul><li>vruntime<ul><li>red-black tree에 얼만큼 job이 실행됐는지 저장된다. virtual runtime 기준.</li><li>각각의 job 마다 nice value가 있어서 runtime에 따라서 weight값을 부여</li><li>nice: -20 ~ 19<ul><li>nice가 높으면 CPU 자원을 적게 사용하도록, 낮으면 CPU 자원을 많이 사용하도록 스케쥴러가 동작.
+$$ vruntime = vruntime + DeltaExec * Weight_0 / Weight_p $$</li></ul></li><li>DeltaExec: 최근 실행시간</li></ul></li></ul></li><li><code>/proc/&lt;pid>/sched</code><ul><li>priority<ul><li>prio = nice + 120<ul><li>CFS: 100 ~ 139</li><li>0 ~ 99 는 real-time scheduler 를 위해 reserved.</li></ul></li></ul></li><li>renice<ul><li>막바꾸면 안된다.</li><li>-1~-20: root 만 rksmd</li></ul></li></ul></li><li>Multiprocessor Scheduling in CFs<ul><li>Load metric<ul><li>Load of thread: 각 쓰레드가 단위 시간당 CPU를 사용한 시간 평균. priority, weighted 고려</li><li>Load of core: loads of the threads 합</li></ul></li><li>코어 별 로드를 균일하게 맞추고자 한다. 4ms마다.</li><li>Imbalance라고 판단되면 고려할 것<ul><li>Cache.. 코어마다 다른 캐시</li><li>NUMA&mldr; CPU 패키지별로 메모리, 버퍼 할당.<ul><li>CPU 패키지별로 load diff가 25% 보다 작으면 migration, load balancing 하지 않음.</li></ul></li></ul></li></ul></li></ul><h1 id=memory-virttualization>Memory Virttualization</h1><h1 id=concurrency>Concurrency</h1><h2 id=threads>Threads</h2><h3 id=1-4>(1)</h3><ul><li>Multi-threaded<ul><li>Multi process와 유사한 성격<ul><li>자신만의 Program counter, 레지스터</li><li>스레드마다 스택</li></ul></li><li>한 프로스세내 스레드들은 address space 공유</li><li>Context switch<ul><li>TCP (Thraed Control Block), 리눅스에선 PCB, TCP 구분이 없다.</li><li>Address space에 해당하는 부분은 그대로 둔다. (CR3 레지스터가 바뀌지 않는다.)
+<img src=https://actumn.github.io/images/kucse-operating-system/threads.png alt=IMAGE></li></ul></li></ul></li><li>Why use threads?<ul><li>Parallelism, 병렬성<ul><li>Multiple core CPU가 계속 등장하고 있다.</li></ul></li><li>Avoiding blocking<ul><li>Slow I/O</li><li>main thread만 있고, I/O block되면 다른 일을 못한다.</li><li>다른 thread가 있고 다른 종류의 일을 실행할 수 있다면 성능 향상</li></ul></li><li>많은 서버 application이 multi-threaded 다.</li></ul></li><li>Thread creation<ul><li>pthread_create</li><li>pthread_join: watis for the threads to finish</li><li>Nondeterministic: 실행순서는 예측할 수 없음</li></ul></li></ul><h3 id=2-4>(2)</h3><ul><li>Race condition
+<img src=https://actumn.github.io/images/kucse-operating-system/threads-race.png alt=IMAGE></li><li>Critical section<ul><li>공유되는 자원, 공유되는 변수들</li><li>반드시 1개의 thread 에서만 접근.</li></ul></li><li>Mutual exclusion<ul><li>critical section에서 1개의 thread만 접근함을 보장</li></ul></li><li>Atomicity<ul><li>critical section 구간 자체를 interrupt가 발생하지 않도록 만든다.</li><li>어떤 instruction이 중간에 interrupt 발생시 실행을 안하게, 또는 발생했음에도 instruction이 끝날때 까지 interrupt를 처리하지 않도록</li></ul></li><li>How to support synchronization<ul><li>하드웨어 제공 (atomic instructions)<ul><li>Atomic memory add: 대부분 CPU 제공.</li><li>자료구조는? Atomic update of B-Tree? CPU가 제공하기 어렵다. 회로도 복잡하고, Atomic 오버헤드.</li></ul></li><li>OS가 Atomic instruction을 기반으로 좀 더 일반적인 동기화 primitives (system call) 를 제공</li></ul></li><li>Mutex<ul><li>pthread_mutex_lock</li><li>pthread_mutex_unlock</li><li>pthread_mutex_trylock</li><li>pthread_mutex_timedlock</li><li>Initialization<ul><li>Static<pre><code>pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+</code></pre></li><li>Dynamic<pre><code>int rc = pthread_mutex_init(&amp;lock, NULL);
+</code></pre></li></ul></li><li>Destory<pre><code>pthread_mutex_destroy()
+</code></pre></li></ul></li><li>Condition varibales<ul><li>pthread_cond_wait</li><li>pthread_cond_signal</li><li>어떤 상태가 다른 CPU에 의해 바뀌었음을 인지하고, 바뀌었을 때 나에게 signal을 보내서 꺠워줄 수 있는 역할.</li><li>Synchronizing two threads<pre><code>while (ready == 0) 
+    ; // spin
+</code></pre><pre><code>ready = 1;
+</code></pre><ul><li>spin lock, busy wait: CPU 낭비. 어떤 상태가 되기까지 기다리겠다.</li><li>CPU cycle 낭비. 1 core CPU라면 thread 1 점유. 상태가 바뀌지도 않을텐데.</li><li>서로 다른 core라면<ul><li>다른 CPU cache에 ready 값이 들어간다. 값 update를 알아차리기 위해 CPU 종류에 따른 cache coherence 알고리즘 의존적</li><li>compiler optimization은?</li></ul></li><li>Condtition variable 활용</li></ul><pre><code>pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+pthread_mutex_lock(&amp;lock);
+while (ready == 0)
+pthread_cond_wait(&amp;cond, &amp;lock);
+pthread_mutex_unlock(&amp;lock);
+</code></pre><pre><code>Pthread_mutex_lock(&amp;lock);
+ready = 1;
+Pthread_cond_signal(&amp;cond);
+Pthread_mutex_unlock(&amp;lock);
+</code></pre><ul><li>Compile</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>gcc -o main main.c -Wall -pthread
+</code></pre></div></li></ul></li></ul><h2 id=locks>Locks</h2><ul><li>Pthread Locks</li></ul><pre><code>pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+...
+pthread_mutex_lock(&amp;lock);
+counter = counter + 1; // critical section
+pthread_mutex_unlock(&amp;lock);
+</code></pre><ul><li>lock을 어떻게 구현하지?<ul><li>하드웨어 support는?</li><li>OS의 역할은?</li></ul></li><li>Evaluation Locks<ul><li>Mutual exclusion (제일 중요)<ul><li>critical section 내에 1개의 thread만 진입</li></ul></li><li>Fairness<ul><li>lock 취득에 있어 fair한 순서보장</li></ul></li><li>Performance<ul><li>lock을 함에 따라 성능 하락이 있진 않은지</li><li>thread 수, CPU 수에 따라 성능의 impact는?</li></ul></li></ul></li><li>Controlling Interrupts</li></ul><pre><code>void lock() {
+  DisableInterrupts();
+}
+void unlock() {
+  EnableInterrupts();
+}
+</code></pre><ul><li>프로세스 스케쥴링에 있어 가장 중요한건 timer interrupt.</li><li>Timer interrupt를 disable하면 timer interrupt가 발생하지 않음<ul><li>scheduling X, context switch X, race condition X</li></ul></li><li>간단하지만 많은 단점<ul><li>privileged operation</li><li>multiprocessor라면 통하지 않는다. (호출한 CPU만 Interrupt disable)</li><li>interrupt 발생 가능성을 잃을 수 있다. 더 처리해야하는데, 덜 처리할 수 있다. 성능 저하 가능성</li><li>결정적으로 이런 시스템콜은 없다.</li></ul></li><li>Spin locks with Load/Stores</li></ul><pre><code>typedef struct __lock_t { int flag; } lock_t;
+void init(lock_t *mutex) {
+    // 0 -&gt; lock is available, 1 -&gt; held
+    mutex-&gt;flag = 0;
+}
+void lock(lock_t *mutex) {
+    while (mutex-&gt;flag == 1)
+        ;
+    mutex-&gt;flag = 1;
+}
+void unlock(lock_t *mutex) {
+    mutex-&gt;flag = 0;
+}
+</code></pre><table><thead><tr><th>Thread 1</th><th>Thread 2</th></tr></thead><tbody><tr><td>Call lock()</td><td></td></tr><tr><td>while (flag == 1)?</td><td></td></tr><tr><td>Context switch</td><td></td></tr><tr><td></td><td>Call lock()</td></tr><tr><td></td><td>while (flag == 1)?</td></tr><tr><td></td><td>flag = 1;</td></tr><tr><td></td><td>Context switch</td></tr><tr><td>flag = 1;</td><td></td></tr></tbody></table><ul><li>No mutual exclusion</li><li>Performance Problem<ul><li>waste time waiting</li></ul></li></ul><h3 id=2-5>(2)</h3><ul><li>Spin locks<ul><li>Test-and-set atomic instruction<ul><li>슈도코드. 실제로는 instruction 임</li></ul><pre><code>int TestAndSet(int *old_ptr, int new) {
+    int old = *old_ptr; // fetch old value at old_ptr
+    *old_ptr = new; // store ’new’ into old_ptr
+    return old; // return the old value
+}
+</code></pre><ul><li>어떠한 preemption이 없음을 하드웨어가 보장</li></ul></li></ul></li><li>Spin locks with Test-and-Set</li></ul><pre><code>typedef struct __lock_t { int flag; } lock_t;
+void init(lock_t *lock) {
+    lock-&gt;flag = 0;
+}
+void lock(lock_t *lock) {
+    while (TestAndSet(&amp;lock-&gt;flag, 1) == 1);
+}
+void unlock(lock_t *mutex) {
+    mutex-&gt;flag = 0;
+}
+</code></pre><ul><li>TestAndSet(0, 1) -> while 문을 빠져나감. lock 취득</li><li>TestAndSet(1, 1) -> 계속 while.</li><li>문제점<ul><li>Not fair</li><li>성능.<ul><li>single core -> thread가 많아지면 더 심각해짐.</li><li>unlcok 되기전에 ready queue에 들어가면?</li></ul></li></ul></li><li>Compare-and-swap atomic instruction</li></ul><pre><code>int CompareAndSwap(int *ptr, int expected, int new) {
+    int actual = *ptr;
+    if (actual == expected)
+        *ptr = new;
+    return actual;
+}
+</code></pre><pre><code>void lock(lock_t *lock) {
+    while (CompareAndSwap(&amp;lock-&gt;flag, 0, 1) == 1);
+}
+</code></pre><ul><li>CompareAndSwap(0, 0, 1) -> while문 빠져나감. lock 취득</li><li>CompareAndSwap(1, 0, 1) -> 계속 while 대기</li><li>달라진 건 없다.<ul><li>Mutex O</li><li>Fair X</li><li>Performance X</li></ul></li><li>Ticket locks: 티켓을 나눠주고 돌려받는 대로.<ul><li>fetch-and-add atomic<pre><code>int FetchAndAdd(int *ptr) {
+    int old = *ptr;
+    *ptr = old + 1;
+    return old;
+}
+</code></pre><pre><code>typedef struct __lock_t {
+    int ticket;
+    int turn;
+} lock_t;
+void lock_init(lock_t *lock) {
+    lock-&gt;ticket = 0;
+    lock-&gt;turn = 0;
+}
+void lock(lock_t *lock) {
+    int myturn = FetchAndAdd(&amp;lock-&gt;ticket);
+    while (lock-&gt;turn != myturn);
+}
+void unlock(lock_t *lock) {
+    lock-&gt;turn = lock-&gt;turn + 1;
+}
+</code></pre><ul><li>Fair O</li></ul></li></ul></li><li>Hardware support<ul><li>Too much spinning<ul><li>성능관점 문제가 남아있다.</li></ul></li><li>A simple approach<ul><li>yield()<ul><li>CPU 자원을 포기하겠다. 다른 thread를 실행시켜라.</li><li>다만 scheduler는 다시 실행시킬 수 있다. vruntime등의 이유로</li></ul></li><li>성능 관점에서 여전히 좋지 않다.</li></ul><pre><code>void lock(lock_t *lock) {
+    while (TestAndSet(&amp;lock-&gt;flag, 1) == 1)
+    yield();
+}
+</code></pre><ul><li>많은 thread가 round-robin 기반으로 schedule 된다면? vruntime 계산해봤더니 결국 그대로.</li><li>spinning은 해결되지 않는다. 결국 같은 thread들이 반복해서 yield. => OS가 중요해진다.</li></ul></li></ul></li></ul><h3 id=3-1>(3)</h3><ul><li>OS Support<ul><li>Sleeping instead of spinning<ul><li>Solaris<ul><li>park(): 호출 thread를 재운다.</li><li>unpark(threadID): 해당 thread를 꺠운다.</li></ul></li><li>Linux<ul><li>futex: fast user-level mutex</li><li>futex_wait(address, expected)</li><li>futex_wake(address): 잚든 thread를 꺠운다.</li><li>address: lock variable</li><li>queue 기반으로 재우고 꺠운다.</li></ul></li></ul></li></ul></li><li>Lock with queue<ul><li>queue: lock을 기다리는 queue</li></ul></li></ul><pre><code>typedef struct __lock_t {
+    int flag; // lock
+    int guard; // spin-lock around the flag and
+                   // queue manipulations
+    queue_t *q;
+} lock_t;
+void lock_init(lock_t *m) {
+    m-&gt;flag = 0;
+    m-&gt;guard = 0;
+    queue_init(m-&gt;q);
+}
+</code></pre><pre><code>void lock(lock_t *m) {
+    while (TestAndSet(&amp;m-&gt;guard, 1) == 1);
+    if (m-&gt;flag == 0) {
+        m-&gt;flag = 1; // lock is acquired
+        m-&gt;guard = 0;
+    } else {
+        queue_add(m-&gt;q, gettid());
+        m-&gt;guard = 0;
+        park(); // ** wakeup/waiting race **
+    }
+}
+void unlock(lock_t *m) {
+    while (TestAndSet(&amp;m-&gt;guard, 1) == 1);
+    if (queue_empty(m-&gt;q))
+        m-&gt;flag = 0;
+    else
+        unpark(queue_remove(m-&gt;q));
+    m-&gt;guard = 0;
+}
+</code></pre><ul><li>TestAndSet ~ m->guard = 0 까지 atomic block.</li><li>unpark() => park() 하면?</li><li>lock 호출 주체가 park()하기 전에, lock 을 가지고 있던 놈이 unpark()</li><li>개선안.</li></ul><pre><code>void lock(lock_t *m) {
+    while (TestAndSet(&amp;m-&gt;guard, 1) == 1);
+    if (m-&gt;flag == 0) {
+        m-&gt;flag = 1; // lock is acquired
+        m-&gt;guard = 0;
+    } else {
+        queue_add(m-&gt;q, gettid());
+        setpark(); // another thread calls unpark before
+        m-&gt;guard = 0; // park is actually called, the
+        park(); // subsequent park returns immediately
+    }
+}
+void unlock(lock_t *m) {
+    while (TestAndSet(&amp;m-&gt;guard, 1) == 1);
+    if (queue_empty(m-&gt;q))
+        m-&gt;flag = 0;
+    else
+        unpark(queue_remove(m-&gt;q));
+    m-&gt;guard = 0;
+}
+</code></pre><ul><li>setpark() : unpark 호출이력 확인. 있는 경우 park()는 재우지 않음.</li></ul><h2 id=lock-based-concurrnet-data-structures>Lock-based Concurrnet Data Structures</h2><p>여러 개의 쓰레드가 접근하는 공유 자료구조<br>race condition을 해결할 방법들</p><h3 id=1-5>(1)</h3><ul><li><p>Correctness</p><ul><li>race condition을 발생시키지 않도록 lock</li></ul></li><li><p>Concurrency</p><ul><li>lock을 걸게 되면 performance 하락 (병렬성 저하)</li><li>최대한 효율적으로 쓸 방법은?</li></ul></li><li><p>Concurrent Counters</p></li></ul><pre><code>typedef struct __counter_t {
+    int value;
+    pthread_mutex_t lock;
+} counter_t;
+void init(counter_t *c) {
+    c-&gt;value = 0;
+    pthread_mutex_init(&amp;c-&gt;lock, NULL);
+}
+void increment(counter_t *c) {
+    pthread_mutex_lock(&amp;c-&gt;lock);
+    c-&gt;value++;
+    pthread_mutex_unlock(&amp;c-&gt;lock);
+}
+void decrement(counter_t *c) {
+    pthread_mutex_lock(&amp;c-&gt;lock);
+    c-&gt;value--;
+    pthread_mutex_unlock(&amp;c-&gt;lock);
+}
+int get(counter_t *c) {
+    pthread_mutex_lock(&amp;c-&gt;lock);
+    int rc = c-&gt;value;
+    pthread_mutex_unlock(&amp;c-&gt;lock);
+    return rc;
+}
+</code></pre><ul><li>Sloppy counter<ul><li>Logical counter<ul><li>CPU core 별 logical counter</li><li>Global counter</li><li>Locks (각 local counter 별 하나씩, global counter 하나)</li></ul></li><li>Basic idea<ul><li>각 CPU가 local counter를 갖고 있고, local counter에 있어선 중간 operation을 다른 core와 경쟁없이 반영.</li><li>주기적으로 global counter에 반영<ul><li>자주 하면 sloppy counter의 장점이 퇴색, 드문드문하면 정확성 하락</li></ul></li><li>임계 값을 정하는 것이 중요</li></ul></li><li>Example
+<img src=https://actumn.github.io/images/kucse-operating-system/lockbased-sloppy-counter.png alt=IMAGE></li></ul></li></ul><pre><code>typedef struct __counter_t {
+    int global;
+    pthread_mutex_t glock;
+    int local[NUMCPUS];
+    pthread_mutex_t llock[NUMCPUS];
+    int threshold; // ** update frequency **
+} counter_t;
+void init(counter_t *c, int threshold) {
+    c-&gt;threshold = threshold;
+    c-&gt;global = 0;
+    pthread_mutex_init(&amp;c-&gt;glock, NULL);
+    int i;
+    for (i = 0; i &lt; NUMCPUS; i++) {
+        c-&gt;local[i] = 0;
+        pthread_mutex_init(&amp;c-&gt;llock[i], NULL);
+    }
+}
+</code></pre><pre><code>void update(counter_t *c, int threadID, int amt) {
+    int cpu = threadID % NUMCPUS;
+    pthread_mutex_lock(&amp;c-&gt;llock[cpu]); // local lock
+    c-&gt;local[cpu] += amt; // assumes amt &gt; 0
+    if (c-&gt;local[cpu] &gt;= c-&gt;threshold) {
+        pthread_mutex_lock(&amp;c-&gt;glock);
+        c-&gt;global += c-&gt;local[cpu];
+        pthread_mutex_unlock(&amp;c-&gt;glock);
+        c-&gt;local[cpu] = 0;
+    }
+    pthread_mutex_unlock(&amp;c-&gt;llock[cpu]);
+}
+
+int get(counter_t *c) {
+    pthread_mutex_lock(&amp;c-&gt;glock);
+    int val = c-&gt;global;
+    pthread_mutex_unlock(&amp;c-&gt;glock);
+    return val; // only approximate!
+}
+</code></pre><p>get의 정확성이 떨어진다. local counter update가 그때 그때 반영이 안되서. 성능은 좋아졌다.</p><h3 id=2-6>(2)</h3><ul><li>Concurrent Linked Lists</li></ul><pre><code>typedef struct __node_t {
+    int key;
+    struct __node_t *next;
+} node_t;
+
+typedef struct __list_t {
+    node_t *head;
+    pthread_mutex_t lock;
+} list_t;
+
+void List_Init(list_t *L) {
+    L-&gt;head = NULL;
+    pthread_mutex_init(&amp;L-&gt;lock, NULL);
+}
+
+int List_Insert(list_t *L, int key) {
+    pthread_mutex_lock(&amp;L-&gt;lock);
+    node_t *new = malloc(sizeof(node_t));
+    if (new == NULL) {
+        perror(&quot;malloc&quot;);
+        pthread_mutex_unlock(&amp;L-&gt;lock);
+        return -1; // fail
+    }
+    new-&gt;key = key;
+    new-&gt;next = L-&gt;head;
+    L-&gt;head = new;
+    pthread_mutex_unlock(&amp;L-&gt;lock);
+    return 0; // success
+}
+
+int List_Lookup(list_t *L, int key) {
+    pthread_mutex_lock(&amp;L-&gt;lock);
+    node_t *curr = L-&gt;head;
+    while (curr) {
+        if (curr-&gt;key == key) {
+            pthread_mutex_unlock(&amp;L-&gt;lock);
+            return 0; // success
+        }
+        curr = curr-&gt;next;
+    }
+    pthread_mutex_unlock(&amp;L-&gt;lock);
+    return -1; // failure
+}
+</code></pre><p>Critical section이 너무 크다.</p><ul><li>Scaling LinkedList<ul><li>공유자원 접근하는 부분만 lock 하자.</li></ul></li></ul><pre><code>void List_Init(list_t *L) {
+    L-&gt;head = NULL;
+    pthread_mutex_init(&amp;L-&gt;lock, NULL);
+}
+void List_Insert(list_t *L, int key) {
+    // synchronization not needed
+    node_t *new = malloc(sizeof(node_t));
+    if (new == NULL) {
+        perror(&quot;malloc&quot;);
+        return;
+    }
+    new-&gt;key = key;
+    // just lock critical section
+    pthread_mutex_lock(&amp;L-&gt;lock);
+    new-&gt;next = L-&gt;head;
+    L-&gt;head = new;
+    pthread_mutex_unlock(&amp;L-&gt;lock);
+}
+
+int List_Lookup(list_t *L, int key) {
+    int rv = -1;
+    pthread_mutex_lock(&amp;L-&gt;lock);
+    node_t *curr = L-&gt;head;
+    while (curr) {
+        if (curr-&gt;key == key) {
+            rv = 0;
+            break;
+        }
+        curr = curr-&gt;next;
+    }
+    pthread_mutex_unlock(&amp;L-&gt;lock);
+    return rv; // bug pruning
+}
+</code></pre><ul><li>Concurrent Queues</li></ul><pre><code>typedef struct __node_t {
+    int value;
+    struct __node_t *next;
+} node_t;
+
+typedef struct __queue_t {
+    node_t *head;
+    node_t *tail;
+    pthread_mutex_t headLock;
+    pthread_mutex_t tailLock;
+} queue_t;
+
+void Queue_Init(queue_t *q) {
+    node_t *tmp = malloc(sizeof(node_t)); // dummy node
+    tmp-&gt;next = NULL;
+    q-&gt;head = q-&gt;tail = tmp;
+    pthread_mutex_init(&amp;q-&gt;headLock, NULL);
+    pthread_mutex_init(&amp;q-&gt;tailLock, NULL);
+}
+
+void Queue_Enqueue(queue_t *q, int value) {
+    node_t *tmp = malloc(sizeof(node_t));
+    assert(tmp != NULL);
+    tmp-&gt;value = value;
+    tmp-&gt;next = NULL;
+
+    pthread_mutex_lock(&amp;q-&gt;tailLock);
+    q-&gt;tail-&gt;next = tmp;
+    q-&gt;tail = tmp;
+    pthread_mutex_unlock(&amp;q-&gt;tailLock);
+}
+
+int Queue_Dequeue(queue_t *q, int *value) {
+    pthread_mutex_lock(&amp;q-&gt;headLock);
+    node_t *tmp = q-&gt;head;
+    node_t *newHead = tmp-&gt;next;
+    if (newHead == NULL) {
+        pthread_mutex_unlock(&amp;q-&gt;headLock);
+        return -1; // queue was empty
+    }
+    *value = newHead-&gt;value;
+    q-&gt;head = newHead;
+    pthread_mutex_unlock(&amp;q-&gt;headLock);
+
+    free(tmp);
+    return 0;
+}
+</code></pre><ul><li>Concurrent Hash Table</li></ul><pre><code>#define BUCKETS (101)
+
+typedef struct __hash_t {
+    list_t lists[BUCKETS];
+} hash_t;
+void Hash_Init(hash_t *H) {
+    int i;
+    for (i = 0; i &lt; BUCKETS; i++)
+        List_Init(&amp;H-&gt;lists[i]);
+}
+int Hash_Insert(hash_t *H, int key) {
+    int bucket = key % BUCKETS;
+    return List_Insert(&amp;H-&gt;lists[bucket], key);
+}
+int Hash_Lookup(hash_t *H, int key) {
+    int bucket = key % BUCKETS;
+    return List_Lookup(&amp;H-&gt;lists[bucket], key);
+}
+</code></pre><h2 id=condition-variables>Condition Variables</h2><p>Condition을 기다리는 방법.</p><ul><li>How to wait for a condition?<ul><li>Spinning은 CPU 낭비.</li></ul><pre><code>volatile int done = 0;
+void *child(void *arg) {
+    printf(&quot;child\n&quot;);
+    done = 1;
+    return NULL;
+}
+int main(int argc, char *argv[]) {
+    pthread_t c;
+    printf(&quot;parent: begin\n&quot;);
+    pthread_create(&amp;c, NULL, child, NULL); // create child
+    while (done == 0); // spin
+    printf(&quot;parent: end\n&quot;);
+    return 0;
+}
+</code></pre></li><li>Condition Variable<ul><li>Thread가 어떤 상태를 기다리는 데, 상태가 만족되지 않는 시간은 sleep (특정 큐에 들어간다.)</li><li>다른 Thread가 꺠울 수 있다.</li><li>ptrhead_cond_wait(queue, mutex)<ul><li>어떤 조건이 만족되지 않을때 만족되기까지 기다린다.</li><li>함수내에서 unlock, sleep</li></ul></li><li>pthread_cond_signal()<ul><li>이때 다시 lock, wait에선 return</li></ul></li><li>Example</li></ul><pre><code>int done = 0;
+pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t c = PTHREAD_COND_INITIALIZER;
+void *child(void *arg) {
+    printf(&quot;child\n&quot;);
+    thr_exit();
+    return NULL;
+}
+int main(int argc, char *argv[]) {
+    pthread_t p;
+    printf(&quot;parent: begin\n&quot;);
+    pthread_create(&amp;p, NULL, child, NULL);
+    thr_join();
+    printf(&quot;parent: end\n&quot;);
+    return 0;
+}
+</code></pre><pre><code>void thr_exit() {
+    pthread_mutex_lock(&amp;m);
+    done = 1;
+    pthread_cond_signal(&amp;c);
+    pthread_mutex_unlock(&amp;m);
+}
+void thr_join() {
+    pthread_mutex_lock(&amp;m);
+    while (done == 0)
+    pthread_cond_wait(&amp;c, &amp;m);
+    pthread_mutex_unlock(&amp;m);
+}
+</code></pre><ul><li>State varibale이 없다면</li></ul><pre><code>void thr_exit() {
+    pthread_mutex_lock(&amp;m);
+    pthread_cond_signal(&amp;c);
+    pthread_mutex_unlock(&amp;m);
+}
+void thr_join() {
+    pthread_mutex_lock(&amp;m);
+    pthread_cond_wait(&amp;c, &amp;m);
+    pthread_mutex_unlock(&amp;m);
+}
+</code></pre><ul><li>Wait 하기전에 Signal.</li><li>main threada를 깨울 애가 없어진다.</li><li>따라서 state variable이 필요하다.</li><li>Lock이 없다면</li></ul><pre><code>void thr_exit() {
+    done = 1;
+    pthread_cond_signal(&amp;c);
+}
+void thr_join() {
+    while (done == 0)
+        pthread_cond_wait(&amp;c);
+}
+</code></pre><ul><li>마찬가지로 Wait 하기전에 signal.</li></ul></li></ul><h3 id=2-7>(2)</h3><ul><li>Producer / Consumer Problem<ul><li>Producer: 데이터 생산 thread</li><li>Consumer: 데이터 소비 thread</li><li>Example<ul><li>Pipe</li><li>Web server</li></ul></li><li>bounded buffer (큐의 길이가 한정적) 가 shared resouce 니까, 동기화가 필요하다. Condition variable 쓰자.</li></ul></li><li>Example</li></ul><pre><code>int buffer; // single buffer
+int count = 0; // initially, empty
+void put(int value) {
+    assert(count == 0);
+    count = 1;
+    buffer = value;
+}
+int get() {
+    assert(count == 1);
+    count = 0;
+    return buffer;
+}
+</code></pre><ul><li>Example - if<ul><li>Producer<pre><code>cond_t cond;
+mutex_t mutex;
+void *producer(void *arg) {
+    int i;
+    for (i = 0; i &lt; loops; i++) {
+        pthread_mutex_lock(&amp;mutex);
+        if (count == 1)
+            pthread_cond_wait(&amp;cond, &amp;mutex);
+        put(i);
+        pthread_cond_signal(&amp;cond);
+        pthread_mutex_unlock(&amp;mutex);
+    }
+}
+</code></pre></li><li>Consumer<pre><code>void *consumer(void *arg) {
+    int i;
+    for (i = 0; i &lt; loops; i++) {
+        pthread_mutex_lock(&amp;mutex);
+        if (count == 0)
+            pthread_cond_wait(&amp;cond, &amp;mutex);
+        int tmp = get();
+        pthread_cond_signal(&amp;cond);
+        pthread_mutex_unlock(&amp;mutex);
+        printf(&quot;%d\n&quot;, tmp);
+    }
+}
+</code></pre></li></ul></li></ul><p><img src=https://actumn.github.io/images/kucse-operating-system/cond-if.png alt=IMAGE>
+T(c1)이 wait, T(p)가 produce 했는데 T(c2)가 consume.<br>T(c1)이 일어나보니 데이터가 없다 -> error</p><ul><li>Example - while<ul><li>Producer<pre><code>cond_t cond;
+mutex_t mutex;
+void *producer(void *arg) {
+    int i;
+    for (i = 0; i &lt; loops; i++) {
+        pthread_mutex_lock(&amp;mutex);
+        while (count == 1)
+            pthread_cond_wait(&amp;cond, &amp;mutex);
+        put(i);
+        pthread_cond_signal(&amp;cond);
+        pthread_mutex_unlock(&amp;mutex);
+    }
+}
+</code></pre></li><li>Consumer<pre><code>void *consumer(void *arg) {
+    int i;
+    for (i = 0; i &lt; loops; i++) {
+        pthread_mutex_lock(&amp;mutex);
+        while (count == 0)
+            pthread_cond_wait(&amp;cond, &amp;mutex);
+        int tmp = get();
+        pthread_cond_signal(&amp;cond);
+        pthread_mutex_unlock(&amp;mutex);
+        printf(&quot;%d\n&quot;, tmp);
+    }
+}
+</code></pre></li></ul></li></ul><p><img src=https://actumn.github.io/images/kucse-operating-system/cond-while.png alt=IMAGE>
+T(c1)이 sleep, T(c2)가 sleep, T(p)가 produce, signal, sleep<br>T(c1)이 comsume 하고 sleep. producer를 꺠우려 했는데 consumer가 깨어났다.<br>T(c2). 일어나보니 data가 없다.<br>같은 condition variable이라는 게 문제.</p><ul><li>Example - while & Two CVs<ul><li>Producer<pre><code>cond_t empty, fill;
+mutex_t mutex;
+void *producer(void *arg) {
+    int i;
+    for (i = 0; i &lt; loops; i++) {
+        pthread_mutex_lock(&amp;mutex);
+        while (count == 1)
+            pthread_cond_wait(&amp;empty, &amp;mutex);
+        put(i);
+        pthread_cond_signal(&amp;fill);
+        pthread_mutex_unlock(&amp;mutex);
+    }
+}
+</code></pre></li><li>Consumer<pre><code>void *consumer(void *arg) {
+int i;
+for (i = 0; i &lt; loops; i++) {
+    pthread_mutex_lock(&amp;mutex);
+    while (count == 0)
+        pthread_cond_wait(&amp;fill, &amp;mutex);
+    int tmp = get();
+    pthread_cond_signal(&amp;empty);
+    pthread_mutex_unlock(&amp;mutex);
+    printf(&quot;%d\n&quot;, tmp);
+    }
+}
+</code></pre></li></ul></li></ul><h3 id=3-2>(3)</h3><p><img src=https://actumn.github.io/images/kucse-operating-system/cond-more.png alt=IMAGE></p><ul><li>More concurrency</li></ul><pre><code>int buffer[MAX];
+int fill_ptr = 0;
+int use_ptr = 0;
+int count = 0;
+
+void put(int value) {
+    buffer[fill_ptr] = value;
+    fill_ptr = (fill_ptr + 1) % MAX;
+    count++;
+}
+int get() {
+    int tmp = buffer[use_ptr];
+    use_ptr = (use_ptr + 1) % MAX;
+    count--;
+    return tmp;
+}
+</code></pre><pre><code>cond_t empty, fill;
+mutex_t mutex;
+void *producer(void *arg) {
+    int i;
+    for (i = 0; i &lt; loops; i++) {
+        pthread_mutex_lock(&amp;mutex);
+        while (count == MAX)
+            pthread_cond_wait(&amp;empty, &amp;mutex);
+        put(i);
+        pthread_cond_signal(&amp;fill);
+        pthread_mutex_unlock(&amp;mutex);
+    }
+}
+</code></pre><pre><code>void *consumer(void *arg) {
+    int i, tmp;
+    for (i = 0; i &lt; loops; i++) {
+        pthread_mutex_lock(&amp;mutex);
+        while (count == 0)
+            pthread_cond_wait(&amp;fill, &amp;mutex);
+        tmp = get();
+        pthread_cond_signal(&amp;empty);
+        pthread_mutex_unlock(&amp;mutex);
+        printf(&quot;%d\n&quot;, tmp);
+    }
+}
+</code></pre><ul><li>Covering conditions<ul><li>모든 thread를 꺠워야 할 수도</li><li>pthread_cond_broadcast()</li><li>example<ul><li>Multi-threaded memory allocation library</li></ul></li></ul></li></ul><h2 id=semaphores>Semaphores</h2><h3 id=1-6>(1)</h3><p>lock과 condition variable 두 목적으로 쓸 수 있다.</p><ul><li>POSIX<ul><li><code>sem_init(sem_t *s, int pshared, unsigned int value)</code><ul><li>semaphore init</li><li>초기값 value 존재</li><li>pshared - 0이면 thread에서 공유, 0이 아니면 process끼리 공유. &ldquo;shared memory&rdquo;</li></ul></li><li>sem_wait(sem_t *s)<ul><li>s 값을 1씩 줄인다.</li><li>s가 음수면 프로세스를 큐에 재운다.</li></ul></li><li>sem_post(sem_t *s)<ul><li>s 값을 1 증가</li><li>sleep 된 프로세스가 있다면 꺠운다.</li></ul></li></ul></li><li>Binary semaphore</li></ul><pre><code>sem_t m;
+sem_init(&amp;m, 0, 1);
+sem_wait(&amp;m);
+// critical section here
+sem_post(&amp;m);
+</code></pre><ul><li>condition lock 대체 가능
+<img src=https://actumn.github.io/images/kucse-operating-system/semaphore-binary.png alt=IMAGE></li><li>Semaphores for ordering</li></ul><pre><code>sem_t s;
+void * child(void *arg) {
+    printf(&quot;child\n&quot;);
+    sem_post(&amp;s);
+    return NULL;
+}
+int main(int argc, char *argv[]) {
+    pthread_t c;
+    sem_init(&amp;s, 0, X); // what should X be?
+    printf(&quot;parent: begin\n&quot;);
+    pthread_create(&amp;c, NULL, child, NULL);
+    sem_wait(&amp;s);
+    printf(&quot;parent: end\n&quot;);
+    return 0;
+}
+</code></pre><ul><li>초기값을 뭐로 하지? lock 대신이면 1.. 0을 줄수도 있다.
+<img src=https://actumn.github.io/images/kucse-operating-system/semaphore-ordering.png alt=IMAGE></li></ul><h3 id=2-8>(2)</h3><ul><li>Producer/Consumer Problem</li></ul><pre><code>int buffer[MAX]; // bounded buffer
+int fill = 0;
+int use = 0;
+void put(int value) {
+    buffer[fill] = value;
+    fill = (fill + 1) % MAX;
+}
+int get() {
+    int tmp = buffer[use];
+    use = (use + 1) % MAX;
+    return tmp;
+}
+</code></pre><pre><code>sem_t empty, sem_t full;
+void *producer(void *arg) {
+    int i;
+    for (i = 0; i &lt; loops; i++) {
+        sem_wait(&amp;empty);
+        put(i);
+        sem_post(&amp;full);
+    }
+}
+
+void *consumer(void *arg) {
+    int i, tmp = 0;
+    while (tmp != -1) {
+        sem_wait(&amp;full);
+        tmp = get();
+        sem_post(&amp;empty);
+        printf(&quot;%d\n&quot;, tmp);
+    }
+}
+</code></pre><pre><code>int main(int argc, char *argv[]) {
+    // ...
+    sem_init(&amp;empty, 0, MAX); // MAX are empty
+    sem_init(&amp;full, 0, 0); // 0 are full
+    // ...
+}
+</code></pre><ul><li>Race condition<ul><li>Single thread producer / cocnsumer 라면 동작</li><li>multi thread의 경우 put(), get() 에서 race condition</li><li>producer, consumer를 mutex 로 감싼다.<pre><code>void *producer(void *arg) {
+    int i;
+    for (i = 0; i &lt; loops; i++) {
+        sem_wait(&amp;mutex);
+        sem_wait(&amp;empty);
+        put(i);
+        sem_post(&amp;full);
+        sem_post(&amp;mutex);
+    }
+}
+
+void *consumer(void *arg) {
+    int i;
+    for (i = 0; i &lt; loops; i++) {
+        sem_wait(&amp;mutex);
+        sem_wait(&amp;full);
+        int tmp = get();
+        sem_post(&amp;empty);
+        sem_post(&amp;mutex);
+    }
+}
+</code></pre></li></ul></li><li>Deadlock<ul><li>2개 이상 thread에서</li><li>테스트케이스보단 production 경험.</li><li>동기화는 설계부터 고려되어야 한다.</li></ul></li></ul><pre><code>void *producer(void *arg) {
+    int i;
+    for (i = 0; i &lt; loops; i++) {
+        sem_wait(&amp;empty);
+        sem_wait(&amp;mutex);
+        put(i);
+        sem_post(&amp;mutex);
+        sem_post(&amp;full);
+    }
+}
+
+void *consumer(void *arg) {
+    int i;
+    for (i = 0; i &lt; loops; i++) {
+        sem_wait(&amp;full);
+        sem_wait(&amp;mutex);
+        int tmp = get();
+        sem_post(&amp;mutex);
+        sem_post(&amp;empty);
+    }
+}
+</code></pre><h3 id=3-3>(3)</h3><ul><li>Reader-Writer Locks<ul><li>write 보다 read가 훨씬 많더라.</li><li>Reader<ul><li>rwlock_acquire_readlock()</li><li>rwlock_release_readlock()</li></ul></li><li>Writer<ul><li>rwlock_acquire_writelock()</li><li>rwlock_release_writelock()</li></ul></li></ul></li></ul><pre><code>typedef struct _rwlock_t {
+    // binary semaphore (basic lock)
+    sem_t lock;
+    // used to allow ONE writer or MANY readers
+    sem_t writelock;
+    // count of readers reading in critical section
+    int readers;
+} rwlock_t;
+void rwlock_init(rwlock_t *rw) {
+    rw-&gt;readers = 0;
+    sem_init(&amp;rw-&gt;lock, 0, 1);
+    sem_init(&amp;rw-&gt;writelock, 0, 1);
+}
+</code></pre><pre><code>void rwlock_acquire_writelock(rwlock_t *rw) {
+    sem_wait(&amp;rw-&gt;writelock);
+}
+void rwlock_release_writelock(rwlock_t *rw) {
+    sem_post(&amp;rw-&gt;writelock);
+}
+</code></pre><p>writer starvation 문제가 있을 수 있다.</p><pre><code>void rwlock_acquire_readlock(rwlock_t *rw) {
+    sem_wait(&amp;rw-&gt;lock);
+    rw-&gt;readers++;
+    if (rw-&gt;readers == 1)
+        // first reader acquires writelock
+        sem_wait(&amp;rw-&gt;writelock);
+    sem_post(&amp;rw-&gt;lock);
+}
+void rwlock_release_readlock(rwlock_t *rw) {
+    sem_wait(&amp;rw-&gt;lock);
+    rw-&gt;readers--;
+    if (rw-&gt;readers == 0)
+        // last reader releases writelock
+        sem_post(&amp;rw-&gt;writelock);
+    sem_post(&amp;rw-&gt;lock);
+}
+</code></pre><ul><li>How to implement semaphores</li></ul><pre><code>typedef struct __Sem_t {
+    int value;
+    pthread_cond_t cond;
+    pthread_mutex_t lock;
+} Sem_t;
+
+// only one thread can call this
+void Sem_init(Sem_t *s, int value) {
+    s-&gt;value = value;
+    Cond_init(&amp;s-&gt;cond);
+    Mutex_init(&amp;s-&gt;lock);
+}
+</code></pre><pre><code>void Sem_wait(Sem_t *s) {
+    Mutex_lock(&amp;s-&gt;lock);
+    while (s-&gt;value &lt;= 0)
+        Cond_wait(&amp;s-&gt;cond, &amp;s-&gt;lock);
+    s-&gt;value--;
+    Mutex_unlock(&amp;s-&gt;lock);
+}
+
+void Sem_post(Sem_t *s) {
+    Mutex_lock(&amp;s-&gt;lock);
+    s-&gt;value++;
+    Cond_signal(&amp;s-&gt;cond);
+    Mutex_unlock(&amp;s-&gt;lock);
+}
+</code></pre><ul><li>원래 표준: value를 줄이고 음수면 잠든다. (number: 자고 있는 스레드 수)</li><li>리눅스 구현: value는 0보다 작아질 수 없다.<ul><li>더 자세히) Linux는 condition variable이 아닌 futex로 구현.</li></ul></li></ul><h2 id=common-concurrency-problems>Common Concurrency Problems</h2><h3 id=1-7>(1)</h3><ul><li>Concurrency Problems<ul><li>Non-deadlock bus<ul><li>Atomicity-violation bugs: critical section X</li><li>Order-violation bugs: 순서 문제 해결 X</li></ul></li><li>Deadlock bugs</li></ul></li><li>Atomicity-Violation Bugs<ul><li>race condition이 발생하지 않을 것이란 기대. 하지만 atomic이 보장되지 않았다.</li><li>Example (MySQL)</li></ul><pre><code>Thread 1:
+if (thd-&gt;proc_info) {
+    ...
+    fputs(thd-&gt;proc_info, ...);
+    ...
+}
+
+Thread 2:
+thd-&gt;proc_info = NULL;
+</code></pre><ul><li>Atomicity-Violation Fixed<pre><code>pthread_mutex_t proc_info_lock = PTHREAD_MUTEX_INITIALIZER;
+Thread 1:
+pthread_mutex_lock(&amp;proc_info_lock);
+if (thd-&gt;proc_info) {
+...
+fputs(thd-&gt;proc_info, ...);
+...
+}
+pthread_mutex_unlock(&amp;proc_info_lock);
+Thread 2:
+pthread_mutex_lock(&amp;proc_info_lock);
+thd-&gt;proc_info = NULL;
+pthread_mutex_unlock(&amp;proc_info_lock);
+</code></pre></li></ul></li><li>Order-Violation Bugs<ul><li>A가 항상 B 전에 실행될 것이란 기대</li><li>Example<pre><code>Thread 1:
+void init() {
+  ...
+  mThread = PR_CreateThread(mMain, ...);
+  ...
+}
+Thread 2:
+void mMain(...) {
+  ...
+  mState = mThread-&gt;State;
+  ...
+}
+</code></pre></li><li>Order-Violation Fixed<ul><li>Thread 1</li></ul><pre><code>pthread_mutex_t mtLock = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t mtCond = PTHREAD_COND_INITIALIZER;
+int mtInit = 0;
+    
+void init() {
+    ...
+    mThread = PR_CreateThread(mMain, ...);
+    // signal that the thread has been created...
+    pthread_mutex_lock(&amp;mtLock);
+    mtInit = 1;
+    pthread_cond_signal(&amp;mtCond);
+    pthread_mutex_unlock(&amp;mtLock);
+    ...
+}
+</code></pre><ul><li>Thread 2</li></ul><pre><code>void mMain(...) {
+    ...
+    // wait for the thread to be initialized...
+    pthread_mutex_lock(&amp;mtLock);
+    while (mtInit == 0)
+        pthread_cond_wait(&amp;mtCond, &amp;mtLock);
+    pthread_mutex_unlock(&amp;mtLock);
+    mState = mThread-&gt;State;
+    ...
+}
+</code></pre></li></ul></li></ul><h3 id=2-9>(2)</h3><ul><li>Deadlock Bugs
+<img src=https://actumn.github.io/images/kucse-operating-system/deadlock.png alt=IMAGE><ul><li>Circular dependencies. 순환 참조</li></ul><pre><code>Thread 1:
+pthread_mutex_lock(L1);
+pthread_mutex_lock(L2);
+
+Thread 2:
+pthread_mutex_lock(L2);
+pthread_mutex_lock(L1);
+</code></pre></li><li>Why do deadlocks occur?<ul><li>코드가 크니 일일히 찾기 쉽지 않다.</li><li>Example (virtual memory system)<ul><li>VMS -> FS</li><li>FS -> VMS</li><li>자주 읽는 데이터는 Intermediate Buffer 안에. (Buffer cache, Page cache)</li><li>Circular request</li></ul></li><li>Nature of encapsulation<ul><li>Example (Java vector class)<pre><code>Vector v1, v2;
+
+Thread 1:
+v1.AddAll(v2);
+Thread 2:
+v2.AddAll(v1);
+``
+- vector 내에서 lock이 잘 되어 있어도 deadlock이 발생함을 알기 어렵다.
+</code></pre></li></ul></li></ul></li><li>Conditions for Deadlocks<ul><li>Mutual exclusion<ul><li>race condition을 없애기 위해 만든 lock이지만 그로 인해 deadlock이.</li></ul></li><li>Hold-and-wait<ul><li>lock을 가진채로 다른 lock을 얻으려 한다.</li></ul></li><li>No preemption<ul><li>다른 thread가 갖는 lock을 강제로 뺏어 올 수가 없다.</li></ul></li><li>Circular wait<ul><li>lock을 기다리는 구조가 circular</li></ul></li><li>이 네가지가 모두 만족 되었다면 circular<ul><li>1가지만 피하면 deadlock을 피할 수 있다.</li></ul></li></ul></li><li>Deadlock prevention<ul><li>Circular wait<ul><li>lock acquire 순서가 다르면서 circular<pre><code>Thread 1:
+lock(L1);
+lock(L2);
+      
+Thread2:
+lock(L2);
+lock(L1);
+</code></pre></li><li>그렇다면 lock acquire 순서가 모두 같으면 circular wait이 발생하지 않는다.</li><li>partial ordering</li></ul></li><li>Hold-and-wait<ul><li>모든 lock을 한꺼번에 acquire<pre><code>pthread_mutex_lock(prevention); // begin lock acquisition
+pthread_mutex_lock(L1);
+pthread_mutex_lock(L2);
+...
+pthread_mutex_unlock(prevention); // end
+</code></pre></li><li>critical section이 커진다.</li><li>lock을 모두 알고 있어야 한다.</li><li>-> 모든 상황에 적용은 어렵다.</li></ul></li><li>No preemption<ul><li>현재 대부분의 운영체젱서 강제로 뺏어 올 수 있는 방법은 없다.</li><li>현실적 solution: trylock<pre><code>top:
+pthread_mutex_lock(L1);
+if (pthread_mutex_trylock(L2) != 0) {
+    pthread_mutex_unlock(L1);
+    goto top;
+}
+</code></pre></li><li>내가 L1, L2 둥다 못가져 온다면 둘다 포기하고 다시 처음부터 acquire.</li><li>livelock<ul><li>여러 thread가 모든 lock을 acquire 하지 못한 채로 loop</li><li>solution: goto 하기 전에 random delay</li><li>주의점: goto 하기 전에 unlock. 자원 획득하기 전에 release 필요.</li></ul></li></ul></li><li>mutual excclusion<ul><li>Lock-free approaches. Lock-free 알고리즘을 쓰자.<pre><code>void insert(int value) {
+  node_t *n = malloc(sizeof(node_t));
+  assert(n != NULL);
+  n-&gt;value = value;
+  pthread_mutex_lock(listlock);
+  n-&gt;next = head;
+  head = n;
+  pthread_mutex_unlock(listlock);
+}
+</code></pre></li><li>CompareAndSwap과 같은 atomic instruction을 쓸 수 있겠다.<pre><code>void insert(int value) {
+    node_t *n = malloc(sizeof(node_t));
+    assert(n != NULL);
+    n-&gt;value = value;
+    do {
+        n-&gt;next = head;
+    } while (CompareAndSwap(&amp;head, n-&gt;next, n) == 0);
+}
+</code></pre></li><li>CPU 자원 낭비 가능성, thread가 많아지면 효율이 구려진다.</li></ul></li></ul></li><li>Deadlock Avoidance<ul><li>쉽지 않다.
+<img src=https://actumn.github.io/images/kucse-operating-system/deadlock-avoid.png alt=IMAGE></li><li>여기저기 쓸 수 있는 방법은 아니다.</li></ul></li><li>Detect and recover<ul><li>deadlock이 발생했을때 detect and recover?</li><li>어려운 기술. trace가 가능한가?</li><li>무엇을 recove? checkpoint??</li><li><strong>Restart !!</strong></li></ul></li></ul><h1 id=persistency>Persistency</h1><h2 id=io-devices-and-hdd>I/O devices and HDD</h2><h3 id=1-8>(1)</h3><p><img src=https://actumn.github.io/images/kucse-operating-system/IO-architecture.png alt=IMAGE></p><ul><li><p>Interface: Device Driver</p><ul><li>시스템 소프트웨어가 명령을 어떤 식으로 넘겨줄 것인가.</li><li>interface, protocol 정의</li><li>(같은 제품이라도 vendor에 따라 드라이버가 바뀐다.)</li></ul></li><li><p>Internal structure
+<img src=https://actumn.github.io/images/kucse-operating-system/IO-internal.png alt=IMAGE></p><ul><li>status: 상태 알려준다</li><li>command, data: OS 드라이버가 어떤 커맨드를 넘겨줄지 셋팅</li><li>internals: 실행해야하는 코드 존재. firmware 또는 OS</li></ul></li><li><p>Protocol</p><pre><code>While (STATUS == BUSY)
+; // wait until device is not busy
+Write data to DATA register
+Write command to COMMAND register
+(Doing so starts the device and executes the command)
+While (STATUS == BUSY)
+; // wait until device is done with your request
+</code></pre><ul><li>비효율적<ul><li>Polling: CPU 자원 낭비</li><li>Programmed I/O (PIO)<ul><li>CPU가 일일히 write??</li><li>메모리 접근보다 오래걸린다.</li></ul></li></ul></li><li>Interrupts<ul><li>Polling하는 대신 CPU는 request<ul><li>요청한 process는 잠들게 만들고 context switch</li></ul></li><li>hardware적으로 일이 끝나면 Interrupt<ul><li>Interrupt handler가 호출: ISR(Interrupt Service Routine), blocked process가 ready로, 나중에 scheduler에 의해 실행
+<img src=https://actumn.github.io/images/kucse-operating-system/IO-interrupts.png alt=IMAGE></li></ul></li></ul></li></ul></li><li><p>Direct Memory Access (DMA)</p><ul><li>PIO 문제 해결하기 위해</li><li>DMA Engine을 사용해 데이터 이동, CPU가 데이터 이동에 관여하지 않는다.</li><li>I/O device에 장착</li><li>(CPU와 별도로) 메인메모리에서 자신의 디바이스로 데이터 이동 혹은 디바이스 데이터 -> 메인메모리</li><li>OS 디바이스 드라이버에서 DMA 명령<ul><li>Data: 시작주소, 길이</li><li>해당 메모리주소는 물리주소.
+<img src=https://actumn.github.io/images/kucse-operating-system/IO-dma.png alt=IMAGE></li></ul></li></ul></li><li><p>Methods of Device Interation</p><ul><li>꼭 DMA, interrupt가 효율적인 것은 아니다.</li><li>별도의 I/O instructions<ul><li>in, out registers</li><li>in, out을 통해 device의 특정 register에 값을 쓸 수 있다.</li><li>일반적으로 privileged</li><li>I/O device 레지스터 이름은 vendor마다 다를텐데&mldr;</li></ul></li><li>Memory-mapped I/O<ul><li>device 메모리 영역(레지스터 포함)을 일종의 address space에 mapping</li><li>맵핑하고 나면 메모리 접근 할 때 주소로 접근 -> load/store</li></ul></li><li>어느게 꼭 좋다고 할수 없다.</li></ul></li><li><p>Device drivers
+<img src=https://actumn.github.io/images/kucse-operating-system/IO-drivers.png alt=IMAGE></p><ul><li>실제 storage들은 Block device. write/read 단위가 block이다. 보통 512 bytes</li></ul></li></ul><h3 id=2-10>(2)</h3><ul><li>Hard Disk Drives (HDD)<ul><li>Platter<ul><li>데이터가 저장된 판떼기. (동그란 원판)</li><li>HDD 안에 여러개 존재.</li></ul></li><li>Spindle<ul><li>platter가 연속된 중심 축. 계속해서 돈다.</li><li>회전속도에 따라 빠른 hardware / 느린 hardware<ul><li>roatation per minute (RPM)</li></ul></li></ul></li><li>Track<ul><li>선. 데이터들이 저장된 원판의 트랙. sector로 나눈다. (block이라 부른다). 512 bytes</li></ul></li><li>Disk head and disk arm<ul><li>Track으로 가기 위해 arm이 움직이고, 특정 sector에 접근하기 위해 spindle이 돈다.
+<img src=https://actumn.github.io/images/kucse-operating-system/IO-HDD.png alt=IMAGE></li></ul></li><li>요즘은 flash memory. 아직 classical server에서 HDD는 많이 쓰인다.</li></ul></li><li>I/O Time
+$$
+T_{I/O} = T_{seek} + T_{rotation} + T_{transfer}
+$$<ul><li>Seek time<ul><li>원하는 트랙을 찾는 데 걸리는 시간</li></ul></li><li>Rotational Delay<ul><li>spindle이 회전함으로써 원하는 sector를 찾는 데 회전에 걸리는 시간</li></ul></li><li>Transfer time<ul><li>sector로 부터 head를 통해 data read/write에 걸리는 시간</li></ul></li></ul></li><li>Disk Scheduling<ul><li>OS<ul><li>ms 단위의 시간. 컴퓨터 내에선 상당히 크다</li><li>disk 접근 순서를 조정해서 $T_{rotation}$과 $T_{seek}$을 줄여서 전체 I/O time을 줄인다.</li></ul></li><li>Example<ul><li>Requests<ul><li>98, 183, 37, 124, 65, 67 (Head starts at 53)</li></ul></li><li>FCFS (First come, First served)<ul><li>98 -> 183 -> 37 -> 122 -> 14 -> 124 -> 65 -> 67</li></ul></li></ul></li></ul></li><li>SSTF: Shortest Seek Time First<ul><li>sector 번호만 알고 track에 대한 구조는 모른다고 가정</li><li>가장 빨리 찾을 수 있는거를 찾자.</li><li>Problems<ul><li>track에 대한 정보를 알 수 없다. 가장 가까이 있는 block을 찾는다. (sector 관점)</li><li>starvation</li></ul></li><li>Example<ul><li>Requests<ul><li>98, 183, 37, 124, 65, 67 (Head starts at 53)</li></ul></li><li>SSTF<ul><li>64 -> 67 -> 37 -> 14 -> 98 -> 122 -> 124 -> 183</li></ul></li><li>큐에 계속 가까이 있는 sector가 진입하면?<ul><li>starvation</li></ul></li></ul></li></ul></li><li>Elevator<ul><li>SCAN<ul><li>ARM이 전진 중이라면 증가하는 쪽으로</li><li>높은 sector 번호에 다다르면 뒤쪽으로, 낮은 sector 번호를 읽는다.</li></ul></li><li>C-SCAN (높은 Sector 번호 -> 다시 제일 낮은 sector 번호)<ul><li>바깥에서 안쪽으로만 읽고, 제일 높은 sector 번호까지 도착하면 제일 낮은 sector 번호로 다시.</li></ul></li><li>Problem<ul><li>Seek time만 고려하고, rotation time은 고려하지 않음.</li></ul></li></ul></li><li>SPTF: Shortest Positioning Time First
+<img src=https://actumn.github.io/images/kucse-operating-system/IO-sptf.png alt=IMAGE><ul><li>seek time, rotation time 모두 고려</li><li>rotation time을 위해선 track 구조를 알아야한다.</li><li>SPTF는 disk안에 firmware를 통해 구현되어 있다.</li><li>예시 그림<ul><li>rotation time이 더 크다면 8</li><li>seek time이 더 크다면 16</li></ul></li></ul></li></ul><h2 id=files-and-directories>Files and Directories</h2><h3 id=1-9>(1)</h3><ul><li><p>Abstractions for storage</p><ul><li>File<ul><li>byte의 연속적 array. byte단위로 접근할 수 있는 정보의 구조</li><li>low-level name 존재: inode</li><li>OS는 file의 위치는 알겠지만 이 file이 그림인지, text인지, C code 인지 모른다.<ul><li>OS가 판단하는 것이 아닌 Desktop level에서 확장자에 따라 연결 프로그램</li></ul></li></ul></li><li>Directory
+<img src=https://actumn.github.io/images/kucse-operating-system/file-dir.png alt=IMAGE><ul><li>하위 file과 directory의 [user-readable name, indoe number] 쌍을 저장하는 정보</li><li>자기를 표현하기 위한 inode number 존재</li></ul></li></ul></li><li><p>Creating Files</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#66d9ef>int</span> fd <span style=color:#f92672>=</span> open(<span style=color:#e6db74></span><span style=color:#e6db74>&#34;</span><span style=color:#e6db74>foo</span><span style=color:#e6db74>&#34;</span>, O_CREAT<span style=color:#f92672>|</span>O_WRONLY<span style=color:#f92672>|</span>O_TRUNC, S_IRUSR<span style=color:#f92672>|</span>S_IWUSR);
+</code></pre></div><ul><li>O_TUNC: 이미 있으면 기존 내용 다 지우고 덮어쓴다</li><li>S_IRUSR | S_IWUSR: readable, writable</li></ul></li><li><p>File descriptor</p><ul><li>An integer<ul><li>해당 프로세스는 read / write operation 수행 가능</li><li>file에 대한 object pointer가 될 수 있다.</li></ul></li><li>프로세스 마다 관리<ul><li>각 프로세스마다 fd list</li></ul></li></ul></li><li><p>Accessing Files (Random)</p><ul><li>OS는 &ldquo;현재&rdquo; offset 정보를 유지한다.</li><li>Implicit update<ul><li>내제적 업데이트</li><li>N bytes read / write -> N만큼 offset 증가</li><li>Read / Write 끝난 지점에 포인터가 가리킴.</li></ul></li><li>Explicit update<ul><li>명시적 업데이트</li><li>lseek 시스템콜로 앞으로도, 뒤로도 보낼 수 있다.</li><li>lseek(int fd, off_t offset, int whence)<ul><li>whence<ul><li>SEEK_SET</li><li>SEEK_CUR</li><li>SEEK_END</li></ul></li></ul></li></ul></li></ul></li><li><p>Open File Table</p><ul><li>프로세스 -> PCB -> open 되어 있는 파일 들의 정보</li><li>운영체제 -> open 되어 있는 파일 테이블</li><li>각각의 entry들은 PCB에서 관리하는 file descriptor와 1:1 맵핑</li><li>Example (xv6) , xv6: 교육용 커널의 일종<pre><code>struct {
+  struct spinlock lock;
+  struct file file[NFILE];
+} ftable;
+</code></pre><pre><code>struct file {
+  int ref;    // 보통 1이다. open한 채로 fork하면 2가 넘어갈 수도.
+  char readable, writable;
+  struct inode *ip;
+  uint off;
+};
+</code></pre></li><li>file은 일반적으로 1개의 unique entry<ul><li>동시에 같은 파일을 다른 프로세스에서 접근해도, 서로 다른 엔트리로 존재</li><li>각각의 file은 동일 파일을 open read / write해도 별도로 접근하는 것처럼 관리<ul><li>race condition 발생 가능성. mutex, semaphore 동기화 필요</li></ul></li></ul></li></ul></li></ul><h3 id=2-11>(2)</h3><ul><li>Shared File Entries<pre><code>int main(int argc, char *argv[]) {
+    int fd = open(&quot;file.txt&quot;, O_RDONLY);
+    assert(fd &gt;= 0);
+    int rc = fork();
+    if (rc == 0) {
+        rc = lseek(fd, 10, SEEK_SET);
+        printf(“C: offset %d\n&quot;, rc);
+    } else if (rc &gt; 0) {
+        (void) wait(NULL);
+        printf(“P: offset %d\n&quot;, (int) lseek(fd, 0, SEEK_CUR));
+    }
+    return 0;
+}
+</code></pre><pre><code>prompt&gt; ./fork-seek
+child: offset 10
+parent: offset 10
+prompt&gt;
+</code></pre><ul><li>다른 쪽에서 변경된 offset을 보도록 되어 있다.
+<img src=https://actumn.github.io/images/kucse-operating-system/file-shared.png alt=IMAGE></li><li>dup() system call<ul><li>인자로 넘어오는 fd와 동일한 파일 entry를 공유하는 fd를 하나 생성하겠다.<ul><li>이때 return 되는 descriptor number는 현재 사용되지 않는 number 중 가장 낮은 descriptor number</li></ul></li></ul></li></ul><pre><code>int fd=open(“output.txt&quot;, O_APPEND|O_WRONLY);
+close(1);
+dup(fd); //duplicate fd to file descriptor 1
+printf(“My message\n&quot;);
+</code></pre></li><li>Writing Immediately<ul><li>write()<ul><li>운영체제는 바로 disk에 쓰지 않는다. (상당한 overhead)</li><li>요청이 있을 때 마다 그때 그때 write하기 보다는 요청을 모아놨다가 한꺼번에 write. disk scheduling 효율을 올린다.</li><li>운영체제 buffering. (page cache / buffer cache)</li></ul></li><li>fsync()<ul><li>buffering이 하고 싶지 않을때.</li></ul></li><li>unlink(): 파일을 지우는 system call.</li></ul></li><li>Making Directories<ul><li>mkdir()<ul><li>디렉토리가 만들어지면 비어있는 디렉토리.</li><li>Default entries<ul><li><code>.</code>: 자기 자신</li><li><code>..</code>: 상위 디렉토리</li></ul></li></ul></li></ul></li><li>Reading Directories<ul><li>opendir(), readdir(), closedir()<pre><code>int main(int argc, char *argv[]) {
+    DIR *dp = opendir(&quot;.&quot;);
+    struct dirent *d;
+    while ((d = readdir(dp)) != NULL) {
+        printf(&quot;%lu %s\n&quot;, (unsigned long) d-&gt;d_ino, d-&gt;d_name);
+    }
+    closedir(dp);
+    return 0;
+}
+</code></pre><pre><code>struct dirent {
+    char d_name[256]; // filename
+    ino_t d_ino; // inode number
+    off_t d_off; // offset to the next dirent
+    unsigned short d_reclen; // length of this record
+    unsigned char d_type; // type of file
+};
+</code></pre></li><li>rmdir()<ul><li>디렉토리가 비어있어야 한다.</li><li>비어있지 않은 애를 지우려고 하면 함수 fail.</li></ul></li></ul></li><li>Link and Unlink Fiels<ul><li>ln command, link() system call<pre><code>prompt&gt; echo hello &gt; file
+prompt&gt; cat file
+hello
+prompt&gt; ln file file2
+prompt&gt; cat file2
+Hello
+prompt&gt; ls -i file file2
+67158084 file
+67158084 file2
+prompt&gt;
+</code></pre><ul><li>ln file, file2</li></ul></li><li>rm command, unlink() systemcall<pre><code>prompt&gt; rm file
+removed ‘file’
+prompt&gt; cat file2
+hello
+</code></pre></li></ul></li></ul><h3 id=3-4>(3)</h3><ul><li><p>Mechanisms for resouce sharing</p><ul><li>Abstraction of a process<ul><li>CPU virtualization -> private CPU</li><li>Memory virtualization -> private memory</li></ul></li><li>File system<ul><li>Disk virtualization -> files and directories<ul><li><strong>block 단위</strong>로 데이터를 저장 / 제공하는 하드웨어 리소스</li><li>어떻게 하면 file과 directory라는 abstraction을 제공하지? -> File system</li></ul></li><li>protection이 중요해진다.<ul><li>permission bits</li></ul></li></ul></li></ul></li><li><p>Permission Bits</p><pre><code>prompt&gt; ls -l foo.txt
+-rw-r--r-- 1 remzi wheel 0 Aug 24 16:29 foo.txt
+</code></pre><ul><li>Type of file<ul><li>-: regular file</li><li>d: directory</li><li>l:: symbolic link</li></ul></li><li>Permision bits
+<img src=https://actumn.github.io/images/kucse-operating-system/file-permission.png alt=IMAGE><pre><code>prompt&gt; chmod 600 foo.txt
+</code></pre></li></ul></li><li><p>Making a file system</p><ul><li>블락 단위의 하드웨어 자원을 file과 directory라는 abstraction으로 제공</li><li>abstraction을 제공하기 위해 필요한 정보가 disk안에 쓰여져야 함</li><li>mkfs: 파일 시스템을 깔아준다.<pre><code>prompt&gt; mkfs -t ext4 /dev/sda1
+</code></pre><ul><li>/dev/sda1: 다바이스. 실제로 이 경로로 가서 파일과 디렉토리가 보이는 건 아님.</li><li>Unix에서 1 디바이스 - 1 파일</li></ul></li></ul></li><li><p>Mounting a file system</p><ul><li>일반적으로 우리가 파일 / 디렉토리를 접근할 수 있도록 하기 위해서 File system tree와 연결이 필요</li><li>file system이 만들어진 disk partition을 특정 파일 tree에 연결시켜 주어야 한다.</li><li>특정 file system을 설치한 block device를 system에 있는 file과 directory tree에 연결해주기 위해서.</li><li>mount 명령어 필요.<pre><code>prompt&gt; mount -t ext4 /dev/sda1 /home/users
+</code></pre><ul><li>/home/users 디렉토리를 통해 /dev/sda1 접근</li></ul></li></ul></li></ul><h2 id=file-system-implementation>File System Implementation</h2><ul><li><p>How to implement a Simple File System</p><ul><li>File system is pure software<ul><li>CPU/memory virtualization은 특별한 하드웨어 기능을 썼다.<ul><li>CPU: timer interrupt, processor mode</li><li>memory: 주소 변환, Multi-level page table</li></ul></li><li>File System을 위한 별도의 기능은 없다.</li><li>Data structures<ul><li>disk는 block들로 구성된 block device</li><li>이걸로 file / directory라는 abstraction을 제공해야 한다.</li><li>데이터와 메타데이터를 어떻게 제공할 것인가?</li></ul></li><li>Access Methods<ul><li>open(), read(), write() 와 같은 시스템 콜과의 Interaction</li></ul></li></ul></li></ul></li><li><p>Overall Organization</p><ul><li>Blocks<ul><li>디스크의 block이 아니고, 파일 시스템 관점에서의 block. (이하 하드웨어적 block은 sector라 한다.)</li><li>일반적으로 여러개의 sector를 포함할 수 잉ㅆ는 크기로 정의.</li><li>디스크를 가상적으로 같은 크기의 block으로 나눈다</li></ul></li><li>Data region
+<img src=https://actumn.github.io/images/kucse-operating-system/fs-data-region.png alt=IMAGE><ul><li>데이터들이 들어가기 위한 block들이 모여있는 data region.</li><li>디렉토리도 포함.</li><li>1칸이 block. 회색부분 data region. 0~7: 다른 용도로 비워놨다.</li></ul></li><li>Metadata
+<img src=https://actumn.github.io/images/kucse-operating-system/fs-inode.png alt=IMAGE><ul><li>각가의 file들에 대한 정보를 저장<ul><li>어떤 데이터 block을 가지고 1 파일을 구성하는가.</li><li>파일 크기 / 접근 권한 / 언제 접근했는지 시간정보 저장</li></ul></li><li>inode (index node)<ul><li>metadata 저장</li><li>disk의 특정 공간을 inode table로서 reserve</li><li>inode 하나는 block크기만큼 필요하지 않다. 1개의 block 안에 여러개의 inode 존재</li></ul></li></ul></li><li>Allocation structures
+<img src=https://actumn.github.io/images/kucse-operating-system/fs-freelist.png alt=IMAGE><ul><li>inode는 파일마다 하나씩. inode에 해당파일을 구성하는 data block이 명시되어 있다.</li><li>file을 생설할 때 마다 inode 공간 할당, data를 위한 block 할당.</li><li>메모리처럼 freelist가 필요하다.</li></ul></li><li>Superblock<ul><li>전체 파일시스템 정보 포함</li><li>inode 몇개, data block 몇개, inode table 시작 / 끝지점 등</li><li>mounting 할 때 OS는 superblock을 읽고 freelist, inode table, data region을 위한 변수를 읽는다. OS가 포맷을 알고 있어야 한다.</li></ul></li></ul></li><li><p>Example
+<img src=https://actumn.github.io/images/kucse-operating-system/fs-example.png alt=IMAGE></p><ul><li>Block size: 4KB<ul><li>페이지 사이즈와 동일, 하드웨어 sector는 512bytes이므로 1 block = 8 sector</li><li>256 KB partition이라 할때 64-block partition.</li></ul></li><li>inode size: 256 B<ul><li>block당 16 inode. 5개 inode block이므로 총 80개의 inode</li><li>실제로 data block은 56개 뿐이므로 80개까지 존재하긴 어렵다.</li></ul></li></ul></li><li><p>inode
+<img src=https://actumn.github.io/images/kucse-operating-system/fs-inodetable.png alt=IMAGE></p><ul><li>i-number<ul><li>각 inode는 숫자로 접근된다.</li><li>inode number -> inode table entry</li></ul></li><li>To read inode number 32<ul><li><ol><li>offset 계산. 32 * sizeof (inode) = 8 KB. 시작 지점에서 8KB만큼 떨어진 곳</li></ol></li><li><ol start=2><li>inode-table 시작지점: 12 KB</li></ol></li><li><ol start=3><li>8 KB + 12 KB = 20 KB</li></ol></li></ul></li><li>Disk sector 단위다. byte addressable이 아님.<ul><li>보통 512 bytes.</li><li>Sector address: (20 * 1024) / 512 = 40</li><li>읽어드린 40번 sector 안에는 다른 정보가 있을수도 있겠다. (inode 사이즈는 256 B, sector는 512 B)</li></ul></li><li>How the inode refers to Where Data Blocks are<ul><li>Multi-level index<ul><li>inode 에는 이 데이터파일을 구성하기 위한 Data block들이 어디어디 있다 정보 => direct pointer / indirect pointer</li><li>direct pointer<ul><li>파일을 구성하는 data block 을 가리킨다. 포인터 개수가 무한정 있을 수 없다. => 큰 파일 지원이 어렵다.</li></ul></li><li>indirect pointer<ul><li>data block을 가리키기는 하지만 data block을 가보면 다시 여러개의 포인터들이 존재. 한번 터 다고 들어가야 데이터가 들어있는 곳을 찾을 수 있다.</li><li>file system에 따라 1개 또는 여러개.</li><li>파일이 아주 커졌을 때만 indirect pointer를 써서 block 안에도 포인터를.</li><li>파일이 작으면 indirect pointer가 존재는 하지만 사용은 안한다.</li><li>double indirect pointer: 가리키는 data block 안에 또 다시 indirect pointer</li></ul></li><li>example
+<img src=https://actumn.github.io/images/kucse-operating-system/fs-inode-indirect.png alt=IMAGE><ul><li>12 direct pointers</li><li>1 indirect pointer</li><li>Block size 4KB</li><li>4B disk address<ul><li>1 direct pointer: 1 block, 4KB</li><li>1 indirect pointer: ((4KB / 4B) + 12) blocks, 4144KB</li></ul></li></ul></li></ul></li></ul></li></ul></li><li><p>Directory Organization</p><ul><li>Directory<ul><li>내부적으로 역시 파일처럼 관리한다.</li><li>inode가 있고, type field에 &ldquo;regular file&rdquo; 대신 &ldquo;directory"로 표현</li><li>directory - direct pointer의 data block 안에는 (entry name, inode number) 존재
+<img src=https://actumn.github.io/images/kucse-operating-system/fs-directory.png alt=IMAGE></li><li>reclen: recrod 총 길이<ul><li>딱 맞게 하진 않고, ext4의 경우 4의 배수, name을 표함할 수 있는 가장 작은 값.</li></ul></li><li>strlen: 파일 이름 길이</li><li>deleting a file<ul><li>record를 0으로 다 지울 것인가? -> 느리다. 메모리도 아니고 디스크.</li><li>inode number 만 0으로. record에는 남겨둔다.</li><li>새로운 파일이 생겨날 때 record안에 들어갈 수 있으면 재사용.</li></ul></li></ul></li></ul></li><li><p>Free space management</p><ul><li>example) 파일을 생성하는 경우
+<img src=https://actumn.github.io/images/kucse-operating-system/fs-create-file.png alt=IMAGE><ul><li>inode 할당을 위해 i-bmap을 뒤진다. 비어있는 inode number를 가져오고, 1로 셋팅.</li><li>마찬가지로 data block을 위해 d-bmap을 뒤져서 비어있는 data block을 가져오고 1로 셋팅. inode에 direct pointer / indirect pointer mapping</li><li>경우에따라 데이터를 많이 써야한다면 d-bmap에서 이어져있는 data block을 가져오도록. (연속되어 있어야 성능이 좋을 것)</li></ul></li></ul></li></ul><h3 id=3-5>(3)</h3><ul><li>Reading a file from disk<ul><li>open("/foo/bar&rdquo;, O_RDONLY): /foo/bar 를 위한 inode를 찾는다.<ul><li>root를 먼저 찾아야한다.<ul><li>일반적으로 root의 inode number는 2. 0: 지워진 파일, 1: 물리적으로 손상된, 사용할 수 없는 bad block</li></ul></li><li>data block을 읽어서 foo라는 entry를 찾는다. (inumber로 찾는다)</li><li>foo의 inode를 찾아서 data block을 읽어서 최종적으로 bar의 inode를 알게 된다.</li><li>bar의 inode 접근</li><li>permission check</li><li>file descriptor 할당, PCB 안에 저장.<ul><li>0: stdin, 1: stdout, 2: stderr</li></ul></li><li>Returns it to the user</li></ul></li><li>read()
+<img src=https://actumn.github.io/images/kucse-operating-system/fs-read.png alt=IMAGE><ul><li>첫번째 block부터 읽는다.</li><li>inode 안에 마지막 접근시간 update</li><li>file offset update
+<img src=https://actumn.github.io/images/kucse-operating-system/fs-read-file.png alt=IMAGE></li></ul></li><li>close()<ul><li>PCB file descriptor 반납</li><li>I/O를 하진 않는다.</li></ul></li><li>write()<ul><li>read보다 훨씬 복잡하다. data block에 write</li><li>새롭게 open해서 wrtie하는 경우 write를 위한 data block 할당.</li><li>inode도 바꿔야 하고, bitmap도 바꿔야 한다.</li><li>5가지 I/O가 발생<ul><li>data bitmap을 찾아서 free datablock을 찾는다.</li><li>bitmap update</li><li>inode를 읽어오고, write 후 update</li><li>실제 data block에 쓰기작업
+<img src=https://actumn.github.io/images/kucse-operating-system/fs-write.png alt=IMAGE></li><li><ul><li>그림에서 write()부분이 foo가 아니라 bar임</li></ul></li></ul></li></ul></li></ul></li><li>Caching and Buffering<ul><li>파일 read / write후 많은 I/O를 야기, 느리다. 성능에 있어서 문제가 된다.</li><li>page cache<ul><li>write가 일어날 때 buffering 하는 공간. 자주 읽을 것 같은 data block을 메모리에 계속 갖는다.</li><li>CPU 하드웨어 캐시는 아니고, data block / inode block을 메모리에 저장, 기능 자체가 cache와 동일.</li><li>cache 하는 단위가 page 크기: 메모리 안에 효과적으로 저장</li><li>ex) read에 있어서도 inode 접근은 여러번 한다. 메모리에 있는 inode 를 읽어서 read / write 성능 향상</li></ul></li><li>Write buffering<ul><li>디스크에 바로 쓰지 않고 메모리에 갖고 있는다. 모아서 I/O Request</li><li>disk schdule에 효과적</li><li>같은 여역에 대해 여러번 wrtie 한 경우 마지막 것만. write 수를 줄일 수 있다.</li></ul></li><li>문제: 최신 정보로 update가 되지 않는다. &ndash;> Journaling</li></ul></li></ul><h2 id=fsck-and-journaling>FSCK and Journaling</h2><h3 id=1-10>(1)</h3><ul><li>How to Update the disk despite crashes<ul><li>They system may crash or lose power between any two writes<ul><li>write operation에 대한 요청이 있었는데, 갑자기 power가 꺼진다.</li><li>언제 발생할 지 예측할 수 없다.</li><li>disk write에 대해선 부분적으로만 완료된 상태?</li><li>컴퓨터를 다시 키고, 해당 디스크 파티션을 다시 마운트 하려 할 때 inode, data block, bitmap 일관성이 깨질 수도. 데이터 손실 가능성 존재</li></ul></li><li>How do we ensure the file system keeps the on-disk image in a reasonable state?<ul><li>File system checker (fsck)</li><li>Journaling</li></ul></li></ul></li><li>Example
+<img src=https://actumn.github.io/images/kucse-operating-system/fsck-example.png alt=IMAGE>
+<img src=https://actumn.github.io/images/kucse-operating-system/fsck-example2.png alt=IMAGE><ul><li>data block을 추가하는 경우<ul><li>file open</li><li>lseek 해서 마지막으로 옮기고</li><li>4KB write 하고 close</li></ul></li><li>데이터는 연속적이지 않을 수 있다. 가급적이면 연속</li><li>Three writes: data bitmap, inode, data block<ul><li>물리적으로 디스크에 써지는 순서는 바뀔 수 있다. 언제 어느것이 오류날 지 모른다.</li></ul></li><li>Crash scenarios (only a single write succeed, 하나만 성공한 케이스)<ul><li>Just the data block<ul><li>전혀 인지하지 못한다. 연결이 안되어 있으니</li><li>파일이 깨지진 않았다. mount가 안된다던지 하는 문제가 없다.</li></ul></li><li>Just the inode<ul><li>garbage data가 있을 것. 제대로 된 데이터를 읽지는 못한다.</li><li>File-system inconsistency 발생.</li></ul></li><li>Just the bitmap<ul><li>File-system inconsistency</li><li>bitmap엔 사용한다고 표시가 되어 있는데, 해당 block을 direct point로 가리키는 inode는 존재하지 않음.</li><li>garbage를 접근하는 일은 없다. 그저 space leak.</li></ul></li></ul></li><li>Crash scenarios (two writes succeed; one fails)<ul><li>inode와 bitmap 성공, data 실패<ul><li>file system 관점에선 inconsistency가 존재하지 않음.</li><li>하지만 garbage를 가리키게 된다.</li></ul></li><li>inode와 data 성공, bitmap 실패<ul><li>inode와 bitmap 간 정보가 달라진다.</li><li>File-system inconsitency.</li><li>해당 데이터 블락을 bitmap에 의해 다른 파일을 위해 할당하게 되는 문제점</li></ul></li><li>bitmap과 data 성공, inode 실패<ul><li>File-system inconsistency.</li><li>inode에선 해당 데이터를 인지하지 못하고, 해당 데이터 블락은 실제론 어떤 inode에서도 사용하고 있지 않음.</li><li>bitmap에선 사용한다고 표기 -> memory leak</li></ul></li></ul></li></ul></li></ul><h3 id=2-12>(2)</h3><ul><li>fsck<ul><li>Unix 계열 운영체제 도구</li><li>file system의 일부는 아니고 file system의 내용을 이해해서 inconsistency를 해결해주는 도구</li><li>inconsistency 상황이 발생하는지 확인<ul><li>모든 문제를 해결할 수는 없다. (잃어버린 data를 찾아주진 못한다.)</li><li>최대한 consistent 하게 만들어준다. mount, 향수 사용에 있어서.</li></ul></li></ul></li><li>What fsck does. fsck가 수집하는 내용<ul><li>Superblock<ul><li>disk partition에 있는 superblock을 보고 해당 정보들이 reasonable 한지 확인.</li></ul></li><li>Free blocks<ul><li>inode의 direct pointer / indirect pointer 사용, 어떤 data block을 사용하고 있는지 분석</li><li>자주 사용하고 있다는 data block들이 bitmap에 제대로 표현이 되어 있는지.</li><li>write operation 중 inconsistency가 발생한 경우 이를 해결하기 위해 노력한다.<ul><li>bitmap에선 1, 가리키는 inode 없음</li><li>inode pointer 존재, bitmap에선 0</li></ul></li></ul></li><li>inode states<ul><li>inode의 여러 metadata들이 알맞은 값을 갖고 있는지<ul><li>ex) type -> regular file, directory, symbolic link. 가령, 정의되지 않는 값을 갖고 있다.</li></ul></li><li>발견되면, 해결하기 어려우므로 해당 inode를 지운다. inode bitmap도 해제.</li></ul></li><li>inode links<ul><li>같은 inode를 공유하는데, 다른 이름의 파일이 여러개 있을 수 있다. 공유하고 있음을 명시하기 위해 reference count</li><li>이 refernce count가 맞는지 확인</li></ul></li><li>Duplicates<ul><li>서로 다른 inode가 동일한 data block을 가리킬 경우</li><li>둘 중 한 inode를 지우거나, 해당 data block을 copy, inode pointer update</li></ul></li><li>Bad block pointers<ul><li>pointer가 partition 내 data block을 가리키는지 확인</li><li>이 disk partition 이 갖고 있지 않는 번호를 가리킨다 => bad block pointer</li><li>해당 pointer 값을 사용하지 않도록 초기화.</li></ul></li><li>Directory 확인<ul><li><code>.</code>, <code>..</code> 을 갖고 있는지.</li><li>directory entry에 있는 각 inode가 실제 존재하는 file과 directory에 문제 없이 연결되는지.</li></ul></li><li>단점<ul><li>상당히 느리다.<ul><li>해당 디스크 파티션 안에 존재하는 모든 superblock, bitmap, inode 정보, data block 들과의 연결관계 모두 뒤져봐야한다.</li><li>disk volume이 상당히 크다면, 크게는 몇시간 까지 걸릴 수 있다.</li></ul></li><li>Wasteful.<ul><li>write operation 문제가 발생하는것은 전원이 나간 시점에 발생한 blocks, inodes, bitmap.</li><li>작은 문제 해결을 위해 disk partition 전체를 봐야한다.</li></ul></li></ul></li></ul></li></ul><h3 id=3-6>(3)</h3><ul><li><p>Journaling (Write-Ahead logging)</p><ul><li>Journaling<ul><li>디스크 update 하기 전에 note. 기록을 남겨 놓는다.</li></ul></li><li>Checkpointing<ul><li>우리는 checkpointing 안하고 있었다. 실제 data update</li></ul></li><li>Journaling이 되었을 때 disk의 저장 구조는?</li></ul></li><li><p>Ext3</p><ul><li>on-disk structures<ul><li>Disk를 block group으로 나누다.</li><li>각 block group은 inode bitmap, data bitmap, inode, data block 포함</li><li>Journal
+<img src=https://actumn.github.io/images/kucse-operating-system/journal-ext3.png alt=IMAGE></li></ul></li></ul></li><li><p>Data Journaling</p><ul><li>Example
+<img src=https://actumn.github.io/images/kucse-operating-system/journal-example.png alt=IMAGE><ul><li>TxB: Transaction 시작, TxE: Transaction 끝</li></ul></li><li>Writing the journal<ul><li>차례로 다 써질때 까지 기다린다? TxB -> I -> B -> Db -> &mldr;<ul><li>상당히 느리다.</li></ul></li><li>5가지를 한꺼번에 다 write?<ul><li>Disk scheduling -> reordering</li><li>전원이 나갈경우 crash. reboot시 garbage &mldr;</li></ul></li><li>두 단계로 이루어진다.<ul><li>Step 1: TxB, I, B, Db 까지만 한꺼번에. 위치는 그대로지만 순서는 Disk Scheduling algorithm으로 결정.</li><li>Step 2: Step1이 다 끝난 후에 TxE write</li><li>TxE를 쓰다가 전원이 나가서, 부적합 정보가 쓰여지면 문제 발생.</li><li>일반적으로 TxE는 1 sector (512 bytes)의 크기를 갖도록 한다.</li><li>Disk는 512 byte write에선 성공 / 실패를 보장 -> atomic</li></ul></li></ul></li><li>Recovery<ul><li>Transaction이 다 쓰여지지 않았다.<ul><li>해당 update 무시. Journal 안 데이터만 날라간다.</li><li>File system consistency 보장</li></ul></li><li>Journal은 다 쓰여졌는데, Checkpointing이 되지 않은 채 전원이 나감<ul><li>Journal을 계속해서 Journal Group 부분에 적는다.</li><li>Journal을 통해 복구 가능</li><li>해당 Journal 들을 순서대로 reply -> 다시 반영</li><li>복구는 가능. 문제는 이미 checkpointing이 되어 있는 Journal이 남아서 불필요하게, redundant하게 실행해서 성능저하 가능성</li></ul></li></ul></li><li>Batching log updates<ul><li>Problem: extra disk traffic<ul><li>ex) 같은 directory에 file 2개. 이 2개의 file의 inode는 동일하다. 동일한 block에 inode를 쓰기위한 write &mldr;</li><li>traffic이 2배, 성능저하.</li></ul></li><li>Solution: <strong>Buffering</strong><ul><li>동일한 block에 대해서 update하려는 시도가 연속적. 이를 묶어서 한번에! traffic을 줄일 수 있다.</li></ul></li></ul></li><li>Making the log finite<ul><li>Problem: log(Journal) 공간은 한정적<ul><li>공간을 아주 크게 만들면 recovery에 긴 시간이 걸린다.</li><li>공간을 줄이면 내용 유실, 반영까지 다음 Journal 기록 불가.</li></ul></li><li>Solution: Circular log (Circular queue)
+<img src=https://actumn.github.io/images/kucse-operating-system/journal-logs.png alt=IMAGE><ul><li>환형 구조이므로 제한적 공간에서도 효율적으로 사용 가능.</li></ul></li></ul></li><li>Ordered Journaling (=Metadata Journaling)<ul><li>Problem: Data Journaling<ul><li>어떤 데이터를 쓸지도 Journaling에 포함. 가장 큰 부분이다.</li></ul></li><li>Solution: Metadata Journaling
+<img src=https://actumn.github.io/images/kucse-operating-system/journal-ordered.png alt=IMAGE><ul><li>데이터는 Journal에 포함하지 말자.</li><li>Crash가 발생했을 땐? data를 언제 disk에 쓸것인가?<ul><li>ext3는 Journaling 하기 전에 먼저 data를 쓴다.</li><li>그 다음 Journal에 metadata를 쓴다.</li><li>데이터만 쓰고 crash -> 복구 X.</li><li>데이터 + Transaction -> inode, bitmap 만 조절해서 recover 가능.</li></ul></li></ul></li><li>Protocol<ol><li>Data write: 데이터 블락에 쓴다.</li><li>Journal metadata write: TxB, I, B</li><li>Journal Commit: TxE</li><li>Checkpoint metadata</li><li>Free</li></ol></li></ul></li></ul></li></ul><hr><h6 id=qna>QnA</h6><ul><li>리눅스를 분석해보고 싶은데요&mldr;. 익숙한 System call의 커널 entry point를 시작으로 내부 구현 코드를 추적해보자</li><li>운영체제를 구현해보고 싶은데요&mldr;. RTOS 구현 from scratch.</li></ul></div></div><div id=post-footer class="post-footer main-content-wrap"><div class=post-footer-tags><span class="text-color-light text-small"></span><br><a class="tag tag--primary tag--small" href=https://actumn.github.io/tags/lecture/>lecture</a>
+<a class="tag tag--primary tag--small" href=https://actumn.github.io/tags/computer-science/>computer science</a>
+<a class="tag tag--primary tag--small" href=https://actumn.github.io/tags/computer-network/>computer network</a></div><div class=post-actions-wrap><nav><ul class="post-actions post-action-nav"><li class=post-action><a class="post-action-btn btn btn--disabled"><i class="fa fa-angle-left"></i><span class="hide-xs hide-sm text-small icon-ml"></span></a></li><li class=post-action><a class="post-action-btn btn btn--default tooltip--top" href=https://actumn.github.io/2020/06/computer-network-2/ data-tooltip="Computer Network (2)"><span class="hide-xs hide-sm text-small icon-mr"></span><i class="fa fa-angle-right"></i></a></li></ul></nav><ul class="post-actions post-action-share"><li class="post-action hide-lg hide-md hide-sm"><a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions><i class="fa fa-share-alt"></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#disqus_thread><i class="fa fa-comment-o"></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#><i class="fa fa-list"></i></a></li></ul></div><div id=disqus_thread><noscript>Please enable JavaScript to view the <a href=//disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript></div></div></article><footer id=footer class=main-content-wrap><span class=copyrights>&copy; 2020 SunMyeong Lee.</span></footer></div><div id=bottom-bar class=post-bottom-bar data-behavior=1><div class=post-actions-wrap><nav><ul class="post-actions post-action-nav"><li class=post-action><a class="post-action-btn btn btn--disabled"><i class="fa fa-angle-left"></i><span class="hide-xs hide-sm text-small icon-ml"></span></a></li><li class=post-action><a class="post-action-btn btn btn--default tooltip--top" href=https://actumn.github.io/2020/06/computer-network-2/ data-tooltip="Computer Network (2)"><span class="hide-xs hide-sm text-small icon-mr"></span><i class="fa fa-angle-right"></i></a></li></ul></nav><ul class="post-actions post-action-share"><li class="post-action hide-lg hide-md hide-sm"><a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions><i class="fa fa-share-alt"></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#disqus_thread><i class="fa fa-comment-o"></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#><i class="fa fa-list"></i></a></li></ul></div></div><div id=share-options-bar class=share-options-bar data-behavior=1><i id=btn-close-shareoptions class="fa fa-close"></i><ul class=share-options></ul></div><div id=share-options-mask class=share-options-mask></div></div><div id=about><div id=about-card><div id=about-btn-close><i class="fa fa-remove"></i></div><img id=about-card-picture src="https://www.gravatar.com/avatar/8c162af52bd6a1258c11ddf087e2af65?s=110" alt><h4 id=about-card-name>SunMyeong Lee</h4><div id=about-card-bio>I love <em>language learning</em>, <em>development</em>, <em>open source</em></div><div id=about-card-job><i class="fa fa-briefcase"></i><br>Student</div><div id=about-card-location><i class="fa fa-map-marker"></i><br>Seoul, Korea</div></div></div><div id=cover style=background-image:url(https://actumn.github.io/images/cover-v1.2.0.jpg)></div><script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin=anonymous></script><script src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js integrity="sha256-/BfiIkHlHoVihZdc6TFuj7MmJ0TWcWsMXkeDFwhi0zw=" crossorigin=anonymous></script><script src=https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.7/js/jquery.fancybox.min.js integrity="sha256-GEAnjcTqVP+vBp3SSc8bEDQqvWAZMiHyUSIorrWwH50=" crossorigin=anonymous></script><script src=https://actumn.github.io/js/script-pcw6v3xilnxydl1vddzazdverrnn9ctynvnxgwho987mfyqkuylcb1nlt.min.js></script><script lang=javascript>window.onload=updateMinWidth;window.onresize=updateMinWidth;document.getElementById("sidebar").addEventListener("transitionend",updateMinWidth);function updateMinWidth(){var sidebar=document.getElementById("sidebar");var main=document.getElementById("main");main.style.minWidth="";var w1=getComputedStyle(main).getPropertyValue("min-width");var w2=getComputedStyle(sidebar).getPropertyValue("width");var w3=getComputedStyle(sidebar).getPropertyValue("left");main.style.minWidth=`calc(${w1} - ${w2} - ${w3})`;}</script><script>$(document).ready(function(){hljs.configure({classPrefix:'',useBR:false});$('pre.code-highlight > code, pre > code').each(function(i,block){if(!$(this).hasClass('codeblock')){$(this).addClass('codeblock');}
+hljs.highlightBlock(block);});});</script><script>var disqus_config=function(){this.page.url='https:\/\/actumn.github.io\/2020\/06\/operating-system\/';this.page.identifier='\/2020\/06\/operating-system\/'};(function(){if(window.location.hostname=="localhost"){return;}
+var d=document,s=d.createElement('script');var disqus_shortname='hugo-tranquilpeak-theme';s.src='//'+disqus_shortname+'.disqus.com/embed.js';s.setAttribute('data-timestamp',+new Date());(d.head||d.body).appendChild(s);})();</script><script type=text/javascript async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_CHTML-full" integrity="sha256-GhM+5JHb6QUzOQPXSJLEWP7R73CbkisjzK5Eyij4U9w=" crossorigin=anonymous></script><script type=text/x-mathjax-config>
+    MathJax.Hub.Config({
+      CommonHTML: { linebreaks: { automatic: true } },
+      tex2jax: { inlineMath: [ ['$', '$'], ['\\(','\\)'] ], displayMath: [ ['$$','$$'], ['\\[', '\\]'] ], processEscapes: false },
+      messageStyle: 'none'
+    });
+  </script></body></html>
