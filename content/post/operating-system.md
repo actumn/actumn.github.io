@@ -10,7 +10,6 @@ tags:
 keywords:
 - tech
 math: true
-draft: true
 #thumbnailImage: //example.com/image.jpg
 ---
 
