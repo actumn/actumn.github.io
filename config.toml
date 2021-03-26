@@ -4,7 +4,7 @@ defaultContentLanguage = "ko-kr"
 title = "Actumn (SunMyeong Lee)"
 theme = "tranquilpeak"
 disqusShortname = "hugo-tranquilpeak-theme"
-# googleAnalytics = "UA-123-45"
+googleAnalytics = "G-YLQBPNSK9Y"
 paginate = 7
 canonifyurls = true
 
